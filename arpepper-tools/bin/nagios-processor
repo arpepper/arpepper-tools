@@ -1,4 +1,4 @@
-#!/xhbin/perl -w
+#!/usr/bin/perl -w
 
 $newpath = `/bin/showpath /u/arpepper/bin usedby=maintainer filetools gnu standard`;
 if ( $newpath ne "" ) {
