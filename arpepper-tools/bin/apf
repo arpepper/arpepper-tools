@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#PATH=`/bin/showpath u=m vendor`; export PATH
+#
+# Enhancement: -F delim (default ":")
+#      
+d=":"
+
+cmd="$@";
+#echo "$cmd"
+
+cmd=`echo "$cmd" | sed 's/ /,$/g'`
+#echo "$cmd"
+
+#echo awk -F"$d" 'BEGIN{OFS="'"$d"'"} {print $'"$cmd"'}'
+
+awk -F"$d" 'BEGIN{OFS="'"$d"'"} {print $'"$cmd"'}'

@@ -1,0 +1,12 @@
+#!/bin/bash -f
+
+DIRS=`cd /home/arpepper ;
+      ls -1A | egrep -v '^(FujiMC|SDcard-|backup.mozilla.|)[bB]ackup(s|)$' |
+      sed 's:^:arpepper/:'`
+
+#echo "${DIRS}"
+
+cd /home
+tar cfp - ${DIRS}
+
+exit 0

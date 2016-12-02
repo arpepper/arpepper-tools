@@ -1,0 +1,31 @@
+#!/xhbin/perl5 -w
+
+$buf = "";
+$doprint = 1;
+
+while (<>) {
+	if ($_ =~ /^-----BEGIN CERTIFICATE-----$/ ) {
+		$doprint = 0;
+		$buf = $_;
+	}
+	elsif ($_ =~ /^-----END CERTIFICATE-----$/ ) {
+		$buf .= $_;
+		$buf =~ s:^:openssl x509 -text << _END\n:;
+		$buf .= "_END\n";
+		#$buf .= "sleep 20\n"; # for debugging via "ptree"
+		#print $buf;
+		# The following is very kludgey
+		# Depends upon?
+		$buf2 = `$buf`;
+		print $buf2;
+		$doprint = 1;
+		$buf = "";
+	} elsif ( $doprint == 0 ) {
+		$buf .= $_;
+	}
+	else {
+		print;
+	}
+
+}
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PATH=~arpepper/bin:$PATH
+export PATH
+
+start-lxcx u1004base :30
+start-lxcx u1404base :31
+start-lxcx u1404base :32
+start-lxcx u1404base :33
+start-lxcx u1404base :34
+start-lxcx u1404mwiki :35

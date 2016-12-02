@@ -1,0 +1,32 @@
+#!/bin/csh -f
+
+setenv LANG C
+setenv LC_ALL C
+setenv LC_COLLATE C
+
+set prog = $0
+
+#set p=/u/arpepper/software/accounts_arpepper-findactive
+#set pm=$p/maintenance
+set pm=""
+
+if ( -x /bin/showpath ) then
+	setenv PATH  `/bin/showpath -pw +wto u=s $pm vendor`
+endif
+
+set prog = `echo "$prog" | sed 's:.*/::'`
+
+set listfilelist = $1
+set cookies = $2
+
+set k = $cookies
+
+foreach list ( `cat $listfilelist` )
+	set U = "https://lists.uwaterloo.ca/mailman/admindb"
+	# curl -s -b $k $U/$list >> test.output.test
+	# <td><a href="https://lists.uwaterloo.ca/mailman/admindb/scs-grads?msgid=17">[1]</a></td>
+	set count=`curl -s -b $k $U/$list | grep -c '/mailman/admindb/[^/?]*[?]msgid='`
+	echo ${list}:${count}
+
+end
+

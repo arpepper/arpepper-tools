@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# /home/arpepper/bin/mountcscfthunderbird || exit 2
+
+# assume we populated  NewMessages with something on linux.cs.uwaterloo.ca
+
+cd /home/arpepper/.thunderbird/*'local2/Mail/Local Folders'
+# Should check if it "looks mounted"
+exec thunderbird -no-remote -P 'local2'

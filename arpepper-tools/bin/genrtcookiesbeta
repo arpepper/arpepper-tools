@@ -1,0 +1,36 @@
+#!/bin/csh -f
+
+
+set u = 'https://cas.uwaterloo.ca/cas/login?service=https%3a%2f%2fcs.uwaterloo.ca%2fcscf%2finternal%2frequest'
+set u = 'https://cas.uwaterloo.ca/cas/login?service=https%3a%2f%2fcs.uwaterloo.ca%2f~arpepper%2fWatIAM-test%2f'
+set u = 'https://cas.uwaterloo.ca/cas/login?service=https%3a%2f%2fcs.uwaterloo.ca%2f~arpepper%2fCASlogin%2f'
+sh -c "2>/dev/null lynx -auth arpepper -lss /home/arpepper/lynx-default.lss -trace -accept_all_cookies ${u}"
+
+set raw_cookie=`grep '^Set-Cookie: MOD_AUTH_CAS_S=' ~/Lynx.trace | tail -1`
+
+#echo $raw_cookie
+#Set-Cookie: MOD_AUTH_CAS_S=e5d311ffcf4a756b96a9ef31169c2c9f;Secure;Path=/
+
+
+set r = `echo "$raw_cookie" | tr -d '\r' | sed 's/^Set-Cookie: *//'`
+set vn = `echo "$r" | sed 's/=.*//'`
+set vv = `echo "$r" | sed 's/^[^=]*=//' | sed 's/;.*//'`
+set p = `echo "$r" | sed 's/^.*;Path=//'`
+
+# echo vn="$vn"
+# echo vv="$vv"
+# echo p="$p"
+
+# echo 'cs.uwaterloo.ca%TFALSE%T'
+set la = 'cs.uwaterloo.ca%TFALSE%T'
+set ll = "${la}${p}%TTRUE%T0%T${vn}%T${vv}"
+# echo la=$la ll=$ll
+# echo HELLO
+# Following gets blanks instead of tabs...
+set line = `echo "$ll" | sed 's/%T/	/g'`
+
+echo "$ll" | sed 's/%T/	/g'
+echo "$ll" | sed 's/%T/	/g'  > /tmp/arpepper/newkook
+
+
+

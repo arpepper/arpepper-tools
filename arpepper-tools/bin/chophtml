@@ -1,0 +1,6 @@
+#!/xhbin/perl5
+
+while (<>) {
+	s/<[^>]*>/$&\n/g ;
+	print;
+}
