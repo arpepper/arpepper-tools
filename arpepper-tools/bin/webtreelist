@@ -1,0 +1,135 @@
+#!/xhbin/perl5
+
+use FileHandle;
+
+STDERR->autoflush(1);
+
+sub
+linkson {
+	my ($url) = @_;
+	my ($lp, $ref);
+	my ($i, $match, @lines, @result);
+
+	@lines = ();
+	if (!open(PIPE,"lynx -dump -image_links '$url'|") ) {
+		die "Cannot open $url";
+	}
+	$lp = -1;
+	while (<PIPE>) {
+		if ($_ =~ /^References$/) {
+			$lp = 0;
+			@lines = ();
+		}
+		# problem? if URL is longer than 70 chars or so?
+		# apparently not; dump does not "wrap" these, whew!
+		if ($_ =~ /^[ \d]{4}\d*\. / ) {
+			if ($lp >= 0) {
+				$ref = $_;
+				$ref =~ s/^.....//;
+				$ref =~ s/^[^ ]*/ /;
+				$ref =~ s/\#[^\#]*$//;
+				$ref =~ s/\?.*$//;  # ignore queries for now
+				$ref =~ s/\n//g;
+				$ref =~ s/^\s*//;
+				$lines[$lp++] = $ref;
+			}
+		}
+		++$i;
+	}
+	close(PIPE);
+	@lines = sort @lines;
+
+	#print "$url", "\n";
+	#
+	# do "uniq"
+	$match = "";
+	for ($i = 0; $i <= $#lines; ++$i) {
+		if ($lines[$i] ne $match) {
+			push @result,$lines[$i];
+			$match = $lines[$i];
+		}
+	}
+	@result;
+}
+
+sub
+is_valid_link {
+	my($link) = @_;
+	my($p, $test);
+
+	foreach $p (@prefix) {
+		$test = substr($link, 0, length($p));
+		if ($test eq $p) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+sub
+add_valid_links {
+	my(@links) = @_;
+	my($p);
+
+	foreach $p (@links) {
+		if (is_valid_link($p)) {
+			if (!defined($search{$p}) ) {
+				$search{$p} = "TODO";
+			}
+		}
+		else {
+			# we would want this for dead link checking,
+			#  but not for tree generation
+			# -- I smell an option
+			#if (!defined($search{$p}) {
+			#	$search{$p} = "DONE";
+			#}
+		}
+	}
+}
+
+die "Usage webtreelist root [prefix...]" if $#ARGV < 0;
+
+$root = $ARGV[0];
+
+shift;
+
+while ($#ARGV >= 0) {
+	push @prefix, $ARGV[0];
+	shift;
+}
+
+if ($#prefix <= 0) {
+	push @prefix, $root;
+}
+
+# print "root=$root\n";
+
+foreach $p (@prefix) {
+	# print "prefix=$p\n";
+	$prefix{$p} = $p;
+}
+
+$search{$root} = "TODO";
+
+$stuff_todo = 1;
+while ($stuff_todo > 0) {
+	$stuff_todo = 0;
+	foreach $k (sort keys %search) {
+		if ($search{$k} eq "TODO") {
+			++$stuff_todo;
+			@links = linkson($k);
+# foreach $t (@links) { print "$t\n"; }
+			add_valid_links(@links);
+			$search{$k} = "DONE";
+		}
+	}
+	print STDERR "$stuff_todo     \r";
+	flush STDERR;
+}
+
+foreach $k (sort keys %search) {
+	print "$k\n";
+}
+
+exit

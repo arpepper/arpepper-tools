@@ -1,0 +1,13 @@
+#!/xhbin/perl5
+
+foreach $u (@ARGV) {
+	$u =~ s/[^\-\&\.\w]//g;
+	open(PIPE,"/software/accounts/bin/diskquota $u|");
+	$n = <PIPE>;
+	$j = <PIPE>;
+	$d = <PIPE>;
+	close(PIPE);
+	$d =~ s/^ *//g;
+	$n =~ s/\n//g;
+	print "$n $d";
+}

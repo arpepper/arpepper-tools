@@ -1,0 +1,6 @@
+#!/bin/sh
+user=$LOGNAME.root
+if [ "x$1" != "x" ]; then
+	user="$1"
+fi
+exec xterm -xrm "XTerm*.font:6x9" -geometry 80x15+0+90 -e csh -c 'kdestroy;nkinit -u '"$user"';krsh undergrad.math echo kinit successful;awk '"'"'BEGIN{print "Hit CR to continue"}{exit;}'"'"

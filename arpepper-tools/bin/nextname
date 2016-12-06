@@ -1,0 +1,29 @@
+#!/bin/tcsh -f
+
+set n = $*:q
+set num = $n
+
+set pre = ` echo "$n" | perl -ne '/^(.*[^1-9])([0-9]+)([^0-9]*)$/; print $1;' `
+set num = ` echo "$n" | perl -ne '/^(.*[^1-9])([0-9]+)([^0-9]*)$/; print $2;' `
+set post = ` echo "$n" | perl -ne '/^(.*[^1-9])([0-9]+)([^0-9]*)$/; print $3;' `
+
+# echo $pre $num $post
+
+# Note: tcsh does not allow leading zeros in $num
+@ newnum = $num + 1
+# echo $newnum
+set oldnum = "$num"
+switch ( "$newnum" )
+case 1*:
+	# Extra check actually allows name-0000 to work as input
+	switch ( "$num" )
+	case 9*:
+		# handle carry to extra digit
+		# if we have run out of digits, our name gets bigger
+		set pre =  `echo "$pre" | sed 's/0$//' `
+		breaksw
+	endsw
+endsw
+
+echo "${pre}${newnum}${post}"
+

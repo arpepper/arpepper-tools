@@ -1,0 +1,76 @@
+#!/xhbin/perl5
+
+#
+# linkstat - given a URL, determine its probable status
+#
+
+sub
+testlink {
+	my($url) = @_;
+	my($statline, $stat, $loop, $redirect, $baseurl, $line);
+
+	$loop = 0;
+
+	$redirect = $url;
+	$redirect =~ /^([^:]*:\/\/[^\/]*)/;
+	$server = $1;
+	while ($loop < 25) {
+		# loop through, processing the Redirect Location sent back
+		++$loop;  # in case of infinite redirect
+		$redirect =~ s/'/%27/g;
+		$baseurl = $redirect;
+		$baseurl =~ s:/$::;  # should we do this?
+#print $redirect, "\n";
+		open(P,"lynx -source -head '$redirect' 2>/dev/null|") || die "can't run lynx ";
+		$statline = <P>;
+		$statline =~ s/\n//g;
+		$statline =~ s/\r//g;
+#print $statline, "\n";
+		if ($statline !~ /^./) {
+			return "HTTP 600 Cannot connect to Server";
+		}
+		$stat = $statline;
+		$stat =~ s/^[^ ]*  *//;
+		$stat =~ s/ .*//;
+#print $stat, "\n";
+		if ($stat < 300 || $stat >= 400) {
+			close(P);
+			return $statline;
+		}
+		# All statuses of 3XX are Redirect of some type, so process it
+		$redirect = "";
+		while (<P>) {
+			$line = $_;
+#print $line;
+			$line =~ s/\n//g;
+			$line =~ s/\r//g;
+			if ($line =~ /^Location: /i) {
+				$redirect = $line;
+				$redirect =~ s/^[^:]*: *//;
+				if ($redirect =~ /^\//) {
+					# stupid non-absolute redirect
+					$redirect = $server.$redirect ;
+				}
+				elsif ($redirect !~ /:/) {
+					# really stupid non-absolute redirect
+					$redirect = $baseurl."/".$redirect ;
+				}
+				elsif ($redirect =~ /^([^:]*:\/\/[^\/]*)/) {
+					$server = $1;
+				}
+			}
+		}
+		close(P);
+		if ($redirect eq "") {
+			return $statline;
+		}
+	}
+	return "HTTP 601 Redirect Loop";
+}
+			
+while ($#ARGV >= 0) {
+	$url = $ARGV[0];
+	$status = testlink($url);
+	print "$status -- $url\n";
+	shift @ARGV;
+}

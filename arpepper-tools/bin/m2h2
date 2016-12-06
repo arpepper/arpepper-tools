@@ -1,0 +1,60 @@
+#!/xhbin/tcsh -f
+
+# Actually, sun seems to have a man2html too?  Maybe man page only.
+setenv PATH `/bin/showpath vendor`
+
+set host = $1
+set pkg = $2
+shift
+shift
+set pages = ()
+
+while ( "$1" =~ [0-9]* || "$1" =~ [i] )
+	set pages = ( $pages $1 )
+	shift
+end
+set args = ( )
+if ( "m${1}t" != "mt" ) then
+	set pages = ( $pages $1 )
+	shift
+	set args = ($*:q)
+endif
+
+
+set hostargs = ()
+if ( "m${host}t" != "mt" && "m${host}t" != "mwww.cs.uwaterloo.cat" ) then
+	set hostargs = ( "-H" $host:q )
+endif
+#
+# No doubt that this is explicitly a twiki man page generator.
+#
+# Following disabled most but not all twiki interpretation
+# We needed an extra "-" in the echo until we did...
+set histchars
+echo '<!-- <pre>'
+echo "$hostargs:q -t $pkg $pages:q"
+echo '-->'
+# I tried a root-relative reference ("/twiki/view/...") but something
+# turned that into http://www.cs.uwaterloo.ca instead of https.
+if ( "m${pkg}t" != "mt" ) then
+	if ( "m${pages:q}t" == "mt" ) then
+# Strangely, man2html -k doesn't seem to work, but when I "correct" the
+#   space before the "(" and use nromal call, things work okay.
+# However, we must add blank lines to stop entries being ignored.
+		( echo "" ; echo "" ; echo ""; echo ""; \
+		  echo "" ; echo "" ; echo ""; echo ""; \
+		man $hostargs:q -t $pkg -k $pkg ) | sed 's/  *[(]/(/' | \
+ 			man2html -bare -compress $args:q \
+-cgiurl 'https://www.cs.uwaterloo.ca/twiki/view/CF/ReadTheFineManPage?page=${title}&section=${section}${subsection}' \
+				| sed 's/H2>/H4>/g'
+	else
+		man $hostargs:q -t $pkg $pages:q | \
+ 			man2html -bare -compress $args:q \
+-cgiurl 'https://www.cs.uwaterloo.ca/twiki/view/CF/ReadTheFineManPage?page=${title}&section=${section}${subsection}' \
+				| sed 's/H2>/H4>/g'
+# instead of the last sed we should really set up a table for man2html
+	endif
+endif
+echo 'Running on ', `hostname`, 'm2h2'
+echo '<!---'
+echo '</pre> -->'

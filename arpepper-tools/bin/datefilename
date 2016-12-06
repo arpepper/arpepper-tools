@@ -1,0 +1,4 @@
+#!/bin/sh
+#datefilename `getdate 'Dec 14'`
+PATH=`/bin/showpath /u/arpepper/bin vendor`; export PATH
+exec timefilename  "$@" | sed 's/-..:..:..$//'

@@ -1,0 +1,28 @@
+#!/xhbin/perl5
+sub
+oct {
+	my ($s) = @_;
+	my $v, $d;
+	$v = 0;
+	while ($s ne "") {
+		$s =~ /^(.)/;
+		$d = $1;
+		$s =~ s/^.//;
+		$v = $v*8 + $d;
+	}
+	return chr($v);
+}
+
+$output = "";
+$len = 0;
+while (<>) {
+	next if ( $_ =~ /^\s/);
+	$_ =~ s/\n//g;
+	@c = split(/\s+/,$_);
+	for ($i = 1; $i <= $#c; ++$i) {
+		$output .= &oct($c[$i]);
+		++$len;
+	}
+}
+syswrite STDOUT,  $output, $len;
+close(STDIN);

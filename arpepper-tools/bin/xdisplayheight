@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ -r $HOME/xscratch/$DISPLAY/SCREENHEIGHT ]; then
+    a=`cat $HOME/xscratch/$DISPLAY/SCREENHEIGHT`;
+else
+    a=1024;
+fi
+echo $a

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ "x$HOME" != "x" ]] ; then
+	cd $HOME
+fi
+
+fname=$1
+if [[ "x$fname" = "x" ]] ; then
+	fname=t.tar
+fi
+
+
+exec dd of=${fname}

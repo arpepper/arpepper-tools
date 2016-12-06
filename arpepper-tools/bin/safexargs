@@ -1,0 +1,86 @@
+#!/xhbin/perl5
+
+#
+# This is like xargs
+#
+#   The "safe" aspect is that we do not process the arguments with the
+#   shell--in particular we do not break them into arguments at blanks,
+#   but also we won't get stung by ">" or "*", etc.
+#
+
+#
+#  Usage:  safexargs binary_path binary_name [args...]
+#
+#    filenames are read from stdin
+#
+#
+# Perform command for given pattern for each filename on stdin
+#
+if ($#ARGV < 1 ) {
+	die "Usage: safexargs binary_path binary_name [args...]\n";
+}
+$binary_path = $ARGV[0];
+shift @ARGV;
+$binary_name = $ARGV[0];
+shift @ARGV;
+@cmdargs = @ARGV;
+$len = 0;
+$argc = 0;
+@args = ();
+while ( <STDIN> ) {
+	$arg = $_;
+	$arg =~ s/\n//g;
+	#print "|${arg}|\n" ;
+	push @args,$arg;
+	$len += length($arg);
+	if (++$argc >= 40 || $len > 10000) {
+		$output = &safegraves($binary_path, $binary_name, @cmdargs,@args);
+		$argc = 0;
+		$len = 0;
+		@args = ();
+		print $output;
+	}
+}
+if ($argc > 0) {
+	$output = &safegraves($binary_path, $binary_name, @cmdargs,@args);
+	$argc = 0;
+	$len = 0;
+	@args = ();
+	print $output;
+}
+exit 0 ;
+
+#
+# safegraves - like ` ... `, but no shell meta-character processing or
+#    other parsing and modification
+#
+sub
+safegraves {
+	local($prog,$name,@args) = @_;
+	local($result);
+	#=================================================================
+	#  We claim the following is "safe graves"
+	#=================================================================
+	$pid = open(GREP,"-|");
+	unless (defined($pid)) {
+		die "Could not fork";
+	}
+	if ($pid) {   # parent
+		#$OldSep = $/;
+		#undef($/);
+		# This is impractical for large results
+		#$output = <SELECTION>;
+		#$/ = $OldSep;
+	}
+	else {   # child
+		exec $prog $name, (@args);
+		die "exec failed $!";
+	}
+	$OldSep = $/;
+	undef($/);
+	$result = <GREP>;
+	$/ = $OldSep;
+	close(GREP);
+	#=================================================================
+	$result;
+}
