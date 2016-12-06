@@ -1,0 +1,46 @@
+#!/bin/bash
+
+mkdir /tmp/showtypes-$$ || exit 1
+cd /tmp/showtypes-$$ || exit 1
+
+cat > bash.script <<END
+umask 022
+mknod cdevice c 1 1
+mknod udevice u 1 1
+mknod pdevice p
+mknod bdevice b 1 1
+mkdir directory
+ln -s directory ln-directory
+ln -s broken2 broken
+umask 722
+mkdir unsearchable
+chmod 666 unsearchable
+umask 022
+echo "hello there" > hello_there.txt
+ln -s hello_there.txt ln-hello_there.txt
+echo "hello there" > unwriteable.txt
+chmod -w unwriteable.txt
+touch jpeg.jpg
+touch png.png
+touch tar.tar
+touch tgz.tgz
+touch au.au
+touch midi.midi
+touch setuid
+chmod 711 setuid
+chmod u+s setuid
+touch setgid
+chmod 711 setgid
+chmod g+s setgid
+mkdir sticky-dir
+chmod +t sticky-dir
+touch  sticky-exe
+chmod 755 sticky-exe
+chmod +t sticky-exe
+mkfifo fifo
+END
+
+chmod +x bash.script
+
+(echo ./bash.script; echo ls -l; echo ls ) | fakeroot -- bash -i
+

@@ -1,0 +1,101 @@
+#!/usr/bin/perl -w
+
+# To get the default values, following probably works...
+# xvim -xrm '*customization:-color'
+
+# http://www.bigsoft.co.uk/blog/index.php/2008/04/11/configuring-ls_colors
+#
+# 30   *color0:black
+# 31   *color1:red
+# 32   *color2:green
+# 33   *color3:orange
+# 34   *color4:blue
+# 35   *color5:purple
+# 36   *color6:cyan
+# 37   *color7:grey
+# bold versions of above (need not correspond, really) are color8 to color15
+#
+# following background colors do appear to match the non-bold above
+# 40   *color8:black    background
+# 41   *color9:red      background
+# 42   *color10:green   background
+# 43   *color11:orange  background
+# 44   *color12:blue    background
+# 45   *color13:purple  background
+# 46   *color14:cyan    background
+# 47   *color15:grey    background
+
+# Set up our current defaults...
+
+# We attempted to map them all to be brown-ish, but not quite
+
+# This works well as a light gray in non-bold, but dark gray for bold
+# In particular, lynx likes to use it as its background.
+$RES = << "END";
+*color0:rgb:cf/cf/cf
+*color8:rgb:8b/8b/8b
+END
+
+
+# The rest for now we just keep identical for N and N+8
+$RES .= << "END";
+*color1:rgb:cb/55/13
+*color9:rgb:bb/55/13
+*color2:rgb:8b/98/13
+*color10:rgb:8b/98/13
+*color3:rgb:bb/95/13
+*color11:rgb:bb/95/13
+*color4:rgb:6b/45/db
+*color12:rgb:6b/45/db
+*color5:rgb:ab/35/83
+*color13:rgb:ab/35/83
+*color6:rgb:4b/a5/73
+*color14:rgb:4b/a5/73
+*color7:rgb:8e/ae/83
+*color15:rgb:8e/ae/83
+END
+
+$IRES="";
+	sub
+process {
+# color11=0xbb9513,0xbb9513
+	($string) = @_;
+	return if $string =~ /^\s*$/;
+	return if $string =~ /^\s*#/;
+	($a1,$junk) = split(/,/,$string);
+	$junk=$junk;
+	($name,$rgbvalue) = split(/=/,$a1);
+	
+	$num = oct($rgbvalue);
+	$b1 = ($num >> 16);
+	$b2 = ($num >> 8);
+	$b3 = ($num);
+	$xvalue = sprintf("rgb:%2.2x/%2.2x/%2.2x",
+		($b1&0xff), ($b2&0xff), ($b3&0xff) );
+	if ($name =~ /^color/) {
+		$IRES .= "*" . $name . ":" . $xvalue . "\n";
+	}
+}
+	
+if (defined($ARGV[0]) && $ARGV[0] ne "") {
+	if ($ARGV[0] eq "-") {
+		while (<>) {
+			process($_);
+		}
+	}
+	else {
+		open(COLORS,"<".$ARGV[0]) || die;
+		while (<COLORS>) {
+			process($_);
+		}
+		close(COLORS);
+	}
+	$RES = $IRES;
+}
+
+print $RES;
+
+open(PIPE,"|xrdb -merge") || die;
+print PIPE $RES;
+close PIPE;
+

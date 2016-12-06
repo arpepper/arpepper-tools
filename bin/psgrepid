@@ -1,0 +1,3 @@
+#/bin/csh -f
+set pat = "$1"
+ps -ae | awk '$4 ~ /'"$pat"'/ {print $1}'

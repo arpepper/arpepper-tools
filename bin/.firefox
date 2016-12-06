@@ -1,0 +1,9 @@
+#!/bin/bash
+
+/usr/bin/printenv > &2
+
+echo == `date` = firefox "$@" === >> /home/arpepper/firefox.log
+/usr/bin/printenv >> /home/arpepper/firefox.log
+echo == `date` = firefox "$@" === >> /home/arpepper/firefox.log
+
+exec /usr/bin/firefox "$@"

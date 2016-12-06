@@ -1,0 +1,10 @@
+#!/bin/csh -f
+while ( "x$1" != "x" )
+	set arg = "$1"
+	if ( "x$arg" == "xnow" ) then
+		/software/gnu/bin/date +"%s"
+	else
+		/software/gnu/bin/date +"%s" -d "$arg"
+	endif
+	shift
+end

@@ -1,0 +1,3 @@
+#!/bin/csh -f
+
+exec /usr/lib/sendmail -f arpepper@uwaterloo.ca $*:q

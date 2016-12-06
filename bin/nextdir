@@ -1,0 +1,8 @@
+#!/bin/csh -f
+
+unset noglob
+
+set f = `ls -d * | tail -1`
+
+set f = `nextname $f`
+echo $f

@@ -1,0 +1,12 @@
+#!/bin/csh -f
+setenv PATH `/bin/showpath u=m /u/arpepper/bin standard`
+
+set f = $1
+if ( "x$f" == "x" ) then
+	/bin/sh -c "echo 'usage: fuserpids file'"
+	exit 2
+endif
+
+fuser "$f" |& sed 's/[^:]*://' | sed 's/o  */%/g' | \
+	sed 's/o//g' | sed 's/ *//g' | tr '%' '\n' | sort -n
+

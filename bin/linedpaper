@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+
+print "P3","\n";
+
+$p1 = $ARGV[0];
+$p2 = $ARGV[1];
+$p3 = $ARGV[2];
+
+$l1 = $ARGV[3];
+$l2 = $ARGV[4];
+$l3 = $ARGV[5];
+
+print "# linedpaper  $p1 $p2 $p3  $l1 $l2 $l3","\n";
+
+$width = 6;
+$height = 18;
+
+$colourmax = 15;
+
+print "$width $height","\n";
+print "$colourmax","\n";
+
+for ( $i=0; $i < $height - 1; ++$i ) {
+	for ( $j=0; $j < $width; ++$j ) {
+		printf("%3d%3d%3d ",$p1,$p2,$p3);
+	}
+	printf("\n");
+}
+for ( ; $i < $height ; ++$i ) {
+	for ( $j=0; $j < $width; ++$j ) {
+		printf("%3d%3d%3d ",$l1,$l2,$l3);
+	}
+	printf("\n");
+}
+
+		
+# linedpaper R G B R G B > xxlinedpaper.ppm
+# /software/netpbm/bin/ppmtogif xxlinedpaper.ppm >xxlinedpaper.gif

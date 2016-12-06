@@ -1,0 +1,8 @@
+#!/bin/bash
+
+message="$*"
+#echo $message
+size=`echo "$message" | wc -c`
+#echo $size
+width=`expr $size '*' 20`
+gm convert -size ${width}x50 -type TrueColor xc:'#888888' tiff:- | gm convert -fill '#FF0808' -quality 89 -font '-*-nimbus sans l-*-*-*--40-40-*-*-*-*-iso8859-1' -draw 'text 20,30 "'"$message"' "' - jpeg:-

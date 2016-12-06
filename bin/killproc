@@ -1,0 +1,24 @@
+#!/bin/csh -f
+if ( "x$1"  == "x" ) then
+	exit 2
+endif
+set killtype = ""
+if ( "x$1" =~ /^-/ ) then
+	set killtype = "$1"
+	shift
+endif
+if ( "x$1"  == "x" ) then
+	exit 2
+endif
+set pid = "$1"
+set name = "$2"
+if ( "x$pid"  == "x" ) then
+	exit 2
+endif
+set checkname = `ps -p $pid | tail -1 | awk '{print $NF}'`
+if ( "x$checkname" == "x$name" ) then
+	echo "killproc: kill $killtype $pid ($name)"
+	kill $killtype $pid
+else
+	echo "killproc: |$checkname| "'!='" |$name|"
+endif

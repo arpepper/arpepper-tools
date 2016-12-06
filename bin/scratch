@@ -1,0 +1,6 @@
+#!/bin/sh
+stty everything
+stty eof '^-' intr '^-' kill '^-' werase '^-' stop '^-'
+stty quit '^-'
+stty everything
+exec cat >/dev/null

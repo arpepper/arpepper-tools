@@ -1,0 +1,16 @@
+#!/bin/bash
+
+keythere=`lsusb | grep -i yubico`
+
+if [[ -n "$keythere" ]] ; then
+	echo -n 'REMOVE YUBIKEY  '
+	while true
+	do
+		sleep 1
+		keythere=`lsusb | grep -i yubico`
+		if [[ -z "$keythere" ]] ; then
+			break
+		fi
+	done
+fi
+

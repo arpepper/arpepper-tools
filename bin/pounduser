@@ -1,0 +1,4 @@
+#!/bin/csh -f
+while (1)
+	ssh -x linux024.student.cs.uwaterloo.ca -l test.adr
+end

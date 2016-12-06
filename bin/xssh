@@ -1,0 +1,13 @@
+#!/bin/bash -f
+
+host=$1
+DISPLAY=$2
+export DISPLAY
+
+shift
+shift
+
+args="$*"
+ssh -Xt $host $args
+
+sleep infinity

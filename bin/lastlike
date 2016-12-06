@@ -1,0 +1,8 @@
+#!/bin/tcsh -f
+
+set n = $*:q
+
+set cmd = 'ls -1d *'"$n:q"'* | tail -1'
+set nn = `eval $cmd:q`
+
+echo $nn

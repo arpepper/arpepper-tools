@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#
+# Example:
+#  /usr/bin/socket -f -l -p /home/arpepper/bin/daemon-dovecot -B 127.14.14.14 -s 14446
+#
+
+exec ssh -x dovecot.cscf.uwaterloo.ca -l arpepper /usr/sbin/dovecot -c /u/arpepper/dovecot.cscf/dovecot1.conf --exec-mail imap

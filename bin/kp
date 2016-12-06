@@ -1,0 +1,21 @@
+#!/bin/csh -f
+set pname = "$1"
+shift
+set sig = "-HUP"
+switch ( "x$1" )
+case x-*:
+	set sig = "$1"
+	shift
+	breaksw
+endsw
+
+# echo star $*
+
+foreach pid ( $* )
+	set apname = `ps -p $pid | grep -v 'TIME' | awk '{print $NF}'`
+	if ( "x$apname" == "x$pname" ) then
+		kill $sig $pid
+	else
+		echo "$pid is $apname, not $pname"
+	endif
+end

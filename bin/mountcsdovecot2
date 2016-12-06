@@ -1,0 +1,39 @@
+#!/bin/csh -f
+set server = `ssh -x mail.cs.uwaterloo.ca /software/hostselect/bin/hostselect cpu`
+if ( "m${server}t" == "mt") then
+	set server = "mail.cs"
+endif
+switch ("${server}")
+case *.uwaterloo.ca:
+	breaksw
+default:
+	set server = "${server}.uwaterloo.ca"
+endsw
+echo "Using server $server".
+sshfs arpepper@${server}:dovecot2/inbox/cs/ /home/arpepper/dovecot2/cs/inbox/ -o follow_symlinks -o idmap=user -o allow_root
+
+set server = `ssh -x mail.cs.uwaterloo.ca /software/hostselect/bin/hostselect cpu`
+if ( "m${server}t" == "mt") then
+	set server = "mail.cs"
+endif
+switch ("${server}")
+case *.uwaterloo.ca:
+	breaksw
+default:
+	set server = "${server}.uwaterloo.ca"
+endsw
+echo "Using server $server".
+sshfs arpepper@${server}:dovecot2/mail /home/arpepper/dovecot2/cs/mail -o sshfs_sync -o idmap=user -o allow_root
+
+set server = `ssh -x mail.cs.uwaterloo.ca /software/hostselect/bin/hostselect cpu`
+if ( "m${server}t" == "mt") then
+	set server = "mail.cs"
+endif
+switch ("${server}")
+case *.uwaterloo.ca:
+	breaksw
+default:
+	set server = "${server}.uwaterloo.ca"
+endsw
+echo "Using server $server".
+exec sshfs arpepper@${server}:dovecot2/.maildir /home/arpepper/dovecot2/cs/.maildir -o sshfs_sync -o idmap=user -o allow_root

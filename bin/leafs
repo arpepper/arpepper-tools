@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+
+#
+#
+# Given:
+#
+# referrer
+#   reference1
+#   reference2
+#   ...
+#
+#
+# Output all "referrer" or "referenceN" which contain no references
+#
+
+$referrer = "*** UNKNOWN ***";
+while (<>) {
+	next if ($_ =~ /^\s*$/);
+	next if ($_ =~ /^\s*#/);
+	if ( $_ =~ /^[^\s]/ ) {
+		$referrer = $_;
+		$referrer =~ s/\n//g;
+		if (!defined($table{$referrer}) ) {
+			# essential to easily detect leafs
+			$table{$referrer} = "";
+		}
+	}
+	else {
+		$reference = $_;
+		$reference =~ s/\n//g;
+		$reference =~ s/^\s*//;
+		if (!defined($table{$reference}) ) {
+			# make each URL a potential referrer
+			# -- essential to easily detect leafs
+			$table{$reference} = "";
+		}
+		if ( $reference ne $referrer ) {
+			# if we ever grow options, this will be an option,
+			# but for now don't count self-reference as reference
+			if (!defined($table{$referrer}) ) {
+				$table{$referrer} = "     ${reference}\n";
+			}
+			else {
+				$table{$referrer} .= "     ${reference}\n";
+			}
+		}
+	}
+}
+
+foreach $k (sort keys %table) {
+	if ( $table{$k} eq "" ) {
+		print "$k\n";
+	}
+}

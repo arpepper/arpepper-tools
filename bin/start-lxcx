@@ -1,0 +1,12 @@
+#!/bin/bash
+
+c=$1
+d=$2
+
+shift
+shift
+
+# sudo lxc-start -d -n $c >& /dev/null
+lxc-startc $c
+
+(DISPLAY=:0 Xephyr $d -screen 3348x900 -br -ac -reset -terminate ) &
