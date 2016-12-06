@@ -1,0 +1,3 @@
+#!/bin/csh
+setenv PATH `/bin/showpath u=m openssl vendor`
+openssl x509 -subject -issuer -startdate -enddate -noout -in $1

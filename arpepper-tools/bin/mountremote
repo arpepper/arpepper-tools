@@ -1,0 +1,18 @@
+#!/bin/csh -f
+set TMPDIR = /tmp/arpepper_remote_filesystems
+set MOUNTPOINT = $TMPDIR/linux.cs.uwaterloo.ca
+if ( ! -d $TMPDIR ) then
+	mkdir $TMPDIR
+endif
+if ( ! -d $MOUNTPOINT ) then
+	mkdir $MOUNTPOINT
+endif
+if ( ! -d $MOUNTPOINT ) then
+	echo "Could not create mount point $MOUNTPOINT."
+	exit 2
+endif
+
+set REMOTE = linux.cs.uwaterloo.ca:/u/arpepper/filesystems
+set LOCAL = $MOUNTPOINT
+exec sshfs arpepper@$REMOTE  $LOCAL -o idmap=user -o allow_root -o sshfs_sync -o reconnect
+

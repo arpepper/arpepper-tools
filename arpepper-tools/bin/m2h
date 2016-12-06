@@ -1,0 +1,3 @@
+#!/bin/tcsh -f
+
+ssh -x cscf.cs m2h $*:q

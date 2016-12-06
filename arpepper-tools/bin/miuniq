@@ -1,0 +1,48 @@
+#!/usr/bin/perl -w
+
+%mids = ();
+
+$del = 0;
+$inhead = 0;
+$m = "";
+while (<>) {
+	if ( $_ =~ /^From /i ) {
+		$inhead = 1;
+		if ( $del ) {
+			open(DEL,">>deleted");
+			print DEL $m;
+			close(DEL);
+		}
+		else {
+			print $m;
+		}
+		$del = 0;
+		$m = "";
+	}
+	$inhead = 0 if ($_ =~ /^$/);
+	$m .= $_;
+	if ($inhead && $_ =~ m/^message-id/i ) {
+		$k = $_;
+		if ($k =~ m/^message-id:\s*$/i ) {
+			$k =~ s/\n//g;
+			$k .= <>;
+			$k =~ s/:\s+/: /;
+		}
+		if (defined($m{$k})) {
+			$del = 1;
+		}
+		else {
+			$m{$k} = $m;
+		}
+	}
+}
+if ( $del ) {
+	open(DEL,">>deleted");
+	print DEL $m;
+	close(DEL);
+}
+else {
+	print $m;
+}
+$del = 0;
+$m = "";

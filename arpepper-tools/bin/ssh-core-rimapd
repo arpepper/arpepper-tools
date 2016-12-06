@@ -1,0 +1,3 @@
+#!/bin/bash
+exec ssh -x core.cs.uwaterloo.ca -l arpepper \
+   /u/arpepper/proj/dovecot-rimapd/rimapd

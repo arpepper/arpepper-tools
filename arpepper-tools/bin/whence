@@ -1,0 +1,11 @@
+#!/bin/sh
+# we do this first, but this means .cshrc must not call whence
+a=`exec csh -c 'alias | sed -n '"'/^""$*	""/s/^/alias /p'"`
+if [ -n "$a" ]; then
+	echo "$a"
+else
+	a=`showpath f="$*"`
+	if [ -n "$a" ]; then
+		absolute $a
+	fi
+fi

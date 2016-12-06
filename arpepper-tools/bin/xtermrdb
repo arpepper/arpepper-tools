@@ -1,0 +1,5 @@
+#!/bin/bash
+echo 'XTerm*scrollBar: true' | xrdb -merge
+echo 'XTerm*saveLines: 30000' | xrdb -merge
+echo 'XTerm*scrollLines: 30000' | xrdb -merge
+echo 'XTerm*geometry: 80x76' | xrdb -merge

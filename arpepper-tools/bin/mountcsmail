@@ -1,0 +1,18 @@
+#!/bin/csh -f
+cd $HOME
+set TMPDIR = `bin/mktmparpepper-mail`
+if ( $TMPDIR == "" ) then
+        echo "TMPDIR not set"
+        exit 2
+endif
+if ( ! -d $TMPDIR ) then
+        mkdir $TMPDIR
+endif
+if ( ! -d $TMPDIR ) then
+        echo "Could not create mount point $TMPDIR."
+        exit 2
+endif
+if ( ! -d $TMPDIR/root ) then
+	exec sshfs arpepper@linux.cs.uwaterloo.ca:mail  $TMPDIR -o follow_symlinks -o idmap=user -o sshfs_sync -o reconnect
+endif
+

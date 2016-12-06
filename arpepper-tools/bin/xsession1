@@ -1,0 +1,47 @@
+#!/bin/csh -f
+
+# firefox lives in /opt/firefox, at least temporarily
+#setenv PATH ${PATH}:/opt/firefox
+setenv PATH /home/arpepper/bin:${PATH}
+
+xrdb -q | sed 's/[	 ]//g' | xrdb -merge
+
+setxtermcolors
+
+# XClock.*icongeometry:^I+3360 +1050
+set PAT="^XClock.*icongeometry:"
+set WIDTH = `xrdb -q | grep "$PAT" | head -1`
+# echo "$WIDTH"
+if ( "m${WIDTH}t" == "mt" ) then
+	cat ~/.Xresources | sed 's/[	 ]//g' | xrdb -merge
+	xrdb -q | sed 's/[	 ]//g' | xrdb -merge
+endif
+set WIDTH = `xrdb -q | grep "$PAT" | head -1`
+if ( "m${WIDTH}t" == "mt" ) then
+	set WIDTH = 1500
+endif
+ 
+set WIDTH = `echo "$WIDTH" | sed 's/^[^:]*:[ 	]*[+-]//'`
+set WIDTH = `echo "$WIDTH" | sed 's/[+-][^+-]*$//'`
+## echo "$WIDTH"
+
+# Duh.  We do not even have up-to-date xvim
+# Or... We should switch to using "xrandr" output.
+
+
+@ two = $WIDTH / 2 - 4
+@ three = $WIDTH / 2 + 4
+
+echo $WIDTH $two $three
+
+xvim -geometry '80x50+30-15' &
+xvim -geometry '80x50-'"$two"'-15' &
+xvim -geometry '80x50+'"$three"'-15' &
+xvim -geometry '80x50-0-15' &
+
+firefox -no-remote -P connect https://connect.uwaterloo.ca/ &
+sleep 5
+firefox -no-remote -P default -geometry '+'"$three"'-0' &
+
+xvim -geometry '162x50+30-15' &
+xvim -geometry '162x50-15-15' &

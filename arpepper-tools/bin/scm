@@ -1,0 +1,2 @@
+#!/bin/csh -f
+exec ssh -Y linux.cs.uwaterloo.ca

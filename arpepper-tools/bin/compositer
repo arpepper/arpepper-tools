@@ -1,0 +1,25 @@
+#!/bin/csh -f
+
+set G1 = +100+100
+set F1 = crop1.jpg
+set G2 = +200+200
+set F2 = crop2.jpg
+set F0 = Adrian-DC2560C.jpg
+
+switch ($#argv )
+case 5:
+	set F2 = $5
+case 4:
+	set G2 = $4
+case 3:
+	set F1 = $3
+case 2:
+	set G1 = $2
+case 1:
+	set F0 = $1
+endsw
+
+echo $F0 $G1 $F1 $G2 $F2
+
+composite -geometry $G1 $F1 $F0 tiff:- | \
+     composite -quality 92 -geometry $G2 $F2 - temp.jpg

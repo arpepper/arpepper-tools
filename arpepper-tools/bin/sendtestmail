@@ -1,0 +1,12 @@
+#!/bin/csh -f
+
+foreach h ( $* )
+echo "================== $h ======="
+	/usr/lib/sendmail -bm arpepper@${h} << _EOF
+From: Adrian Pepper <arpepper@cs.uwaterloo.ca>
+Subject: Test mail to host ${h}
+To: arpepper@${h}
+
+This is a test
+_EOF
+end

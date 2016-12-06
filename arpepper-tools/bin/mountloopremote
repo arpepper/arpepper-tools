@@ -1,0 +1,12 @@
+#!/bin/csh -f
+set TMPDIR = /tmp/arpepper_remote_filesystems
+set MOUNTPOINT = $TMPDIR/linux.cs.uwaterloo.ca
+set FS = $MOUNTPOINT/filesystem1.ext4
+
+if ( ! -f $FS ) then
+	echo "$FS does not exist."
+	exit 2
+endif
+
+sudo mount -o loop $FS /loop2
+

@@ -1,0 +1,165 @@
+#!/usr/bin/perl -w
+
+#$newpath = `/bin/showpath /u/arpepper/bin usedby=maintainer filetools gnu standard`;
+$path = $ENV{'PATH'};
+
+if ( $path eq "") {
+	$path = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+}
+$HOME = "/home/arpepper";
+$newpath = "$HOME/bin:$path";
+if ( $newpath ne "" ) {
+        $ENV{'PATH'} = $newpath;
+}
+else {
+        die "Cannot set PATH";
+}
+
+$gnudate = "date"; # assert our path ensures that gnu/bin/date will be used
+sub
+unixtime {
+	my ($datestring) = @_;
+
+	# we need to change this to use internal routines soon.
+	$value = `$gnudate --date "$datestring" +%s`;
+	return 0 + $value; 
+}
+
+#
+# This is extremely messy but currently works.
+# The nested loop to process multiple messages on stdin is particularly
+# messy.
+#
+sub
+mail {
+	my ($file, $preface, $subject) = @_;
+
+	#print "mail $file $subject\n";
+	#return;
+	open(PIPE,"|/usr/lib/sendmail -f arpepper\@localhost -bm arpepper\@localhost");
+	printf(PIPE "From: Adrian Pepper <arpepper\@uwaterloo.ca>\n");
+	printf(PIPE "Subject: %s\n", $subject);
+	printf(PIPE "\n");
+	print PIPE $preface;
+	open(F,"<$file");
+	while (<F>) {
+		print PIPE $_;
+	}
+}
+
+$end = 0;
+while (<>) {
+	if ($_ =~ /^From /) {
+		$end = 0;
+		next;
+	}
+	# ignore messages up to next /^From /
+	next if $end;
+	$fromseen = 0;
+	$from = "";
+	$line = $_;
+	# done one message
+	while (defined($line) && $line =~ /\n/) {
+		$line =~ s/\n//g;
+		if ( $line =~ /^From: / ) {
+			next if ($fromseen);
+			$fromseen = 1;
+			if ( ( $line =~ /^From: .*<[rs]t-(owner|comment)[^@]*@/i ) ) {
+				$from = "RT";
+			}
+			else {
+				$from = "";
+				$efrom = $line;
+			}
+		}
+		if ( $line =~ /^Subject/ ) {
+			$line =~ m@^Subject: \[UW-M[FA][CT][HF] #([0-9]+)\] *(.*)@;
+			if (defined($1)) { $rtno = $1; }
+			if (defined($2)) {
+				$subject = $2;
+				$subject =~ s/(.{1,60}).*/$1/;
+			}
+		}
+		if ( $line =~ m@^From @ ) {
+			last;
+		}
+		$line = <>;
+	}
+	if ( defined($line) && $line =~ m@^From @ ) {
+		# No more lines to eat
+		$end = 0;
+	}
+	else {
+		$end = 1;
+	}
+
+	if ($from eq "RT") {
+		chdir "$HOME/rt/";
+		$r = "recent";
+		system("touch $r");
+		open (R,">>$r") || die "Could not write $h";
+		print R "RT#$rtno $subject\n";
+		close(R);
+	}
+	else {
+		chdir "$HOME/rt/";
+		$r = "errors";
+		system("touch $r");
+		open (R,">>$r") || die "Could not write $h";
+		print R "$efrom\n";
+		close(R);
+	}
+}
+
+#$now = `/software/gnu/bin/date "+%s"`;
+$now = `/bin/date "+%s"`;
+#$recent = $now - 2*86400;
+
+chdir "$HOME/rt";
+system("date > update");
+if ( -z "recent" ) { exit(0); }
+
+system("sort recent | uniq -c | sort -nr | sed 's/	/  /g' | sed 's/^    //' > summary-recent-$$");
+system("mv summary-recent-$$ summary-recent");
+
+#
+# If there are new problems, we should know?
+# Alerts for recovery are less critical.
+# But how do we debounce?
+#
+$frequent = 0;
+#$hour=`/software/gnu/bin/date "+%H"`;
+$hour=`/bin/date "+%H"`;
+$hour += 0;
+if (7 <= $hour && $hour <= 21) {
+	$frequent = 1;
+}
+#$dow = `/software/gnu/bin/date "+%w"`;
+$dow = `/bin/date "+%w"`;
+$dow += 0;
+if ($dow < 1 || 5 < $dow) {
+	$frequent = 0;
+}
+# $then = `stat last -headings +mtime -pathname`;
+if ( -d "last" ) {
+	$then = `/usr/bin/stat -c %Y last`;
+	$then += 0;
+}
+else {
+	$then = 0;
+}
+# Problem is first message in a batch gets sent off alone
+# Would really like to wait five minutes to accumulate a batch
+if ( (( $frequent && (($now - $then) >= (60*60) ) )
+	 || (($now - $then) >= (8*60*60)) )  ) {
+	$items = 0 + `cat summary-recent | wc -l`;
+	$messages = 0 + `cat recent | wc -l`;
+	# Really we want to wait some time after first new message arrives
+	mail("summary-recent", "" . "\n", "Summary RT activity $messages/$items");
+	system("cp -p recent last");
+	system("cp -p summary-recent last");
+	$r = "recent";
+	open (R,">$r") || die "Could not write $h";
+	close(R);
+	system("touch last/dummy ; rm last/dummy");
+}

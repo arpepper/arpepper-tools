@@ -1,0 +1,12 @@
+#!/bin/bash
+
+(DISPLAY=:30 ssh -Xf u1004base /home/arpepper/bin/newgnome)
+(DISPLAY=:31 ssh -XfC u1404base /home/arpepper/bin/newunity)
+(DISPLAY=:32 ssh -Xf u1404base /home/arpepper/bin/newlxsession)
+(DISPLAY=:33 ssh -Xf u1404base /home/arpepper/bin/newmate)
+(DISPLAY=:34 ssh -Xf u1404base /home/arpepper/bin/newmwm)
+(DISPLAY=:35 ssh -Xf u1404mwiki /home/arpepper/bin/newlxsession)
+
+echo ""
+echo '**' All display managers started. '**'
+echo ""

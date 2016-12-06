@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+
+use IPC::Open3;
+
+$ENV{'LANG'} = "C";
+$ENV{'LANGUAGE'} = "C";
+$ENV{'LC_ALL'} = "C";
+
+$sender=`/usr/bin/formail -z -c -r -xTo: < /dev/stdin`;
+$sender =~ s/\n//g;
+
+#print $sender,"\n";
+
+$domain = $sender;
+$domain =~ s/^.*\@//;
+$userpart = $sender;
+$userpart =~ s/\@.*//;
+
+$input = "ehlo cs.uwaterloo.ca\nmail from: someone\@cs.uwaterloo.ca\n";
+$input .= "rcpt to: ${sender}\nquit\n";
+
+#open(T,">/tmp/askakslkl-$$");
+#print T $input;
+#close(T);
+#
+#open(T,"netcat localhost 25 < /tmp/askakslkl-$$|");
+#while (<T>) {
+#	print $_;
+#}
+
+my $pid = open3(\*WRITE, \*READ,0, "netcat localhost 25");
+            #if \*ERROR is false, STDERR is sent to STDOUT
+# Not clear there is any error handling possible
+# So error exit from this program needs to be accepted as "sender okay".
+print WRITE "$input";
+$sender_okay = 1;
+while (<READ>) {
+	#print $_;
+	if ($_ =~ /^550 .*User unknown/) {
+		$sender_okay = 0;
+	}
+}
+
+waitpid($pid, 1);
+
+printf("%s %s\n", $sender, $sender_okay);
+
+exit !$sender_okay;
+

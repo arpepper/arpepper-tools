@@ -1,0 +1,5 @@
+#!/bin/tcsh -f
+
+set n = $*:q
+
+nextname `lastlike $n`

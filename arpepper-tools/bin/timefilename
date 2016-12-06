@@ -1,0 +1,20 @@
+#!/bin/csh -f
+#timefilename `getdate 'Dec 14'`
+setenv PATH `/bin/showpath -pw u=m /u/arpepper/bin mfcf-misc mfcf-basics nawk vendor`
+set timevar = $1
+if ( "x$timevar" == "x" ) then
+	set timevar = `getdate now`
+endif
+#echo $timevar
+set timestr = `ctime $timevar`
+# Thu Oct 23 19:04:46 EDT 2003
+# tr 'A-Z' 'a-z'
+# stopped working, Solaris 2.6 to Solaris 8
+exec echo $timestr | tr '[A-Z]' '[a-z]' | nawk 'BEGIN { \
+m["jan"] = 1; m["feb"] = 2; m["mar"] = 3; m["apr"] = 4; \
+m["may"] = 5; m["jun"] = 6; m["jul"] = 7; m["aug"] = 8; \
+m["sep"] = 9; m["oct"] = 10; m["nov"] = 11; m["dec"] = 12; \
+} \
+{ \
+	printf("%d-%2.2d-%2.2d-%s\n", $5, m[$2], $3, $4 ); \
+} '

@@ -1,0 +1,38 @@
+#!/bin/bash -f
+#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm '*.background:#efefef' -xrm '*.foreground:#0f0f0f' -e vim
+#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f'
+#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f' -xrm '*Color:#efefef'
+#xterm -xrm '*geometry:80x55' -bg '#efefef' -fg '#0f0f0f' -fs 1
+args="$*"
+#echo $args
+xterm \
+    -xrm '*Scrollbar.thickness:5' \
+    -xrm '*ScrollBar*background: #ee0000' \
+    -xrm '*XmScrollBar.background: #ee0000' \
+    -xrm '*ScrollBar.foreground: #ee0000' \
+    -xrm '*XmScrollBar.foreground: #ee0000' \
+    -xrm '*XmScrollBar.thickness: 5' \
+    -xrm '*geometry:80x50' \
+    -bg '#efefef' -fg '#0f0f0f' \
+    -xrm '*FaceSize:5' \
+    -xrm '*faceSize:5' \
+    -xrm '*FaceSize1:5' \
+    -xrm '*faceSize1:5' \
+    -xrm '*FaceSize2:5' \
+    -xrm '*faceSize2:5' \
+    -xrm '*FaceSize3:5' \
+    -xrm '*faceSize3:5' \
+    -xrm '*FaceSize4:5' \
+    -xrm '*faceSize4:5' \
+    -xrm '*FaceSize5:5' \
+    -xrm '*faceSize5:5' \
+    -xrm '*FaceSize6:5' \
+    -xrm '*faceSize6:5' \
+    -xrm '*renderFont:on' \
+    -xrm '*RenderFont:on' \
+    -xrm '*Logfile:/home/arpepper/xterm.log' \
+    -fa 'x' \
+    -sb -sl 15000 $args
+
+# Note: FaceSize xrm started working after -fa '8x' was added!?
+

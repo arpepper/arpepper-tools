@@ -1,0 +1,6 @@
+#!/bin/bash -f
+
+args="$*"
+/home/arpepper/bin/xvim -e /usr/bin/vi "$args"
+
+

@@ -1,0 +1,17 @@
+#!/bin/sh
+fontwidth="$1"
+if [ "x$fontwidth" = "x" ]; then
+    fontwidth="9"
+else
+    shift
+fi
+if [ -r $HOME/xscratch/$DISPLAY/SCREENWIDTH ]; then
+    a=`cat $HOME/xscratch/$DISPLAY/SCREENWIDTH`;
+else
+    a=1000;
+fi
+a=`expr $a / $fontwidth - 2`
+if [ "x$*" != "x" ]; then
+	a=`expr $a "$@" `
+fi
+echo $a
