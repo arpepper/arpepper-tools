@@ -1,4 +1,4 @@
-#!/xhbin/tcsh -f
+#!/usr/bin/tcsh -f
 
 if ($?STY) exit 0
 set screen = `/bin/showpath findfirst=screen current`

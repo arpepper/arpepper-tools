@@ -1,4 +1,4 @@
-#!/xhbin/perl5
+#!/usr/bin/perl
 
 foreach $u (@ARGV) {
 	$u =~ s/[^\-\&\.\w]//g;

@@ -1,4 +1,4 @@
-#!/xhbin/perl5
+#!/usr/bin/perl
 
 #
 # linkstat - given a URL, determine its probable status

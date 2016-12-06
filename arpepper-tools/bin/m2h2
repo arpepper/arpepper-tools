@@ -1,4 +1,4 @@
-#!/xhbin/tcsh -f
+#!/usr/bin/perl -f
 
 # Actually, sun seems to have a man2html too?  Maybe man page only.
 setenv PATH `/bin/showpath vendor`

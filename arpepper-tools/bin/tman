@@ -1,4 +1,4 @@
-#!/xhbin/perl -s
+#!/usr/bin/perl -s
 $tmanmade = 0;
 $tmandir = "/tmp/tman$$/";
 sub

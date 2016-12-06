@@ -1,4 +1,4 @@
-#!/xhbin/perl5
+#!/usr/bin/perl
 while ( <> ) {
 	$line = $_;
 	if (length($line) > 255) {
