@@ -3,9 +3,49 @@
 #xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f'
 #xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f' -xrm '*Color:#efefef'
 #xterm -xrm '*geometry:80x55' -bg '#efefef' -fg '#0f0f0f' -fs 1
-args="$*"
+args="$@"
 #echo $args
 #echo $DISPLAY
+#echo args = "${args}"
+#echo args2 = "${args[2]}"
+#echo args2 = "${@}[2]"
+eargs=`echo "${args}" | sed 's/ *-e .*//'`
+
+# Following was determined by running xterm with successive -fs
+# and using "xwininfo" to get the info for those selectively sized windows.
+declare -a dims=(
+        "0x0"
+        "1x3"
+        "2x4"
+        "2x5"
+        "3x7"
+        "4x9"
+        "5x10"
+        "6x12"
+        "6x13"
+        "7x15"
+        "8x17"
+        "9x18"
+        "10x19"
+        "10x22"
+        "11x23"
+        "12x24"
+        "13x26"
+        "14x28"
+        "14x29"
+        "15x30"
+        "16x32"
+        "17x33"
+        "18x35"
+        "18x37"
+        "19x38"
+        "20x39"
+)
+
+#for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+#do
+#	echo ${dims[$i]}
+#done
 
 # Mon Jan 17 11:04:21 EST 2011 -
 #   faceSize and/or -fa became harmful on Solaris X display
@@ -34,12 +74,74 @@ case "$DISPLAY" in
 		faces="$faces -xrm *faceSize5:14"
 		faces="$faces -xrm *FaceSize6:16"
 		faces="$faces -xrm *faceSize6:16"
+		# Other experiments suggested above is no longer necessary.
+		faces=""
 		faces="$faces -fa x"
 		;;
 	*)
 		echo $DISPLAY
 esac
 
+# http://stackoverflow.com/questions/17810483/determine-character-cell-size-of-a-monospaced-truetype-font-for-xterm
+# shows one the command "xwininfo"
+# It would seem that could be rather expensive.
+# Also have difficulty getting right $WINDOWID passed to it
+# And you see the unwanted window flash up.
+
+# But see...
+# xwininfo -root
+
+# RESTART
+# point size should be height, in absolute units 1/72 of 25.4mm
+# E.g. height 296mm = 296 * 72 / 25.4 = 839 points
+# fs 10 should give 80 chars or so... but doesn't
+# 
+# Empirically, fs appears to be pixels; could it be height?
+#   No, appears to be width.
+
+fs=12
+sizenext=0
+for a in $eargs
+do
+	if (( $sizenext > 0 ))
+	then
+# Problem: oversized fs is passed by xterm even though we don't accept it
+		if (( ( 0 < $a ) && ( $a < 26 ) ))
+		then
+			fs=$a
+			#fs=`echo "$fs" | sed 's/^.*x//'`
+			#echo fs=$fs
+		fi
+		sizenext=0
+	fi
+	case $a in
+	(-fs)
+		sizenext=1
+		;;
+	(*)
+		sizenext=0
+	esac
+done
+#echo fs=$fs
+#echo dim ${dims[$fs]}
+
+# TODO: work out a reasonable default height
+# Want to examine args and find a "-fs" argument if any
+# Note we will specify -geometry which may be overridden later anyway.
+# Let alone that window manager may adjust oversized windows also.
+# 
+cheight=${dims[$fs]}
+#echo cheight=$cheight
+cheight=`echo "$cheight" | sed 's/^.*x//'`
+#xrandr on a new system added "primary" after connect; geometry not positional
+#height=`xrandr --current | grep ' connected ' | awk '{print $3}' | sed 's/[^x]*x//' | sed 's/[+].*//' | sort -n | head -1`
+height=`xwininfo -root | grep '^ *Height:  *' | sed 's/^.*: //'`
+height=`expr '(' $height - 96 ')' / $cheight`
+#echo height=$height
+# PROBLEM: fs is the width, height can vary; usually 2 is good estimate
+# We worked this out; $dims provides the answer.
+
+# I am not sure we need $faces anymore
 #    $faces \
 #    -xrm '*renderFont:on' \
 #    -xrm '*RenderFont:on' \
@@ -52,13 +154,14 @@ xterm \
     -xrm '*ScrollBar.foreground: #ee0000' \
     -xrm '*XmScrollBar.foreground: #ee0000' \
     -xrm '*XmScrollBar.thickness: 5' \
-    -xrm '*geometry:80x50' \
     -bg '#efefef' -fg '#0f0f0f' \
     $faces \
     -xrm '*renderFont:on' \
     -xrm '*RenderFont:on' \
     -xrm '*Logfile:/home/arpepper/xterm.log' \
-    -sb -sl 15000 $args
+    -fs 12 \
+    -xrm "*geometry:80x$height" \
+    -sb -sl 15000 "$@"
 
 #Note:
 #  -bg  xterm*background: or XTerm*background:
