@@ -1,8 +1,0 @@
-#!/bin/sh
-a=`/bin/echo "$1" | sed -e 's/[.]/[.]/g' -e 's/[*]/.*/g'`
-a=`xrdb -q | grep "$a" | sed -e 's/.*:[ 	]*//'`
-if [ -z "$a" ]; then
-	shift
-	a="$*"
-fi
-echo "$a"

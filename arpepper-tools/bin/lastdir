@@ -1,7 +1,0 @@
-#!/bin/csh -f
-
-unset noglob
-
-set f = `ls -d * | tail -1`
-
-echo $f

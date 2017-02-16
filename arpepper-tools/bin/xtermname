@@ -1,8 +1,0 @@
-#!/bin/sh
-if [ "$1" = "" ]
-then
-	a=`hostname`
-	echo -n ']0;'"$a"''
-else
-	echo -n ']0;'"$*"''
-fi

@@ -1,8 +1,0 @@
-#!/bin/sh
-for dir in `find . -type d -name RCS -print`
-do
-	rcsfiles=`find $dir '(' -name '*,v' -o -name '.*,v' ')' -print`
-	if [ "x$rcsfiles" != "x" ] ; then
-		rlog -L -R $rcsfiles | sed -e 's:RCS/::g' -e 's/,v$//g'
-	fi
-done

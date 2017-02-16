@@ -1,2 +1,0 @@
-#!/bin/csh -f
-awk -F: '{ for (i=1; i <= NF; ++i) {printf("%2d:%s\n",i,$i);}}'

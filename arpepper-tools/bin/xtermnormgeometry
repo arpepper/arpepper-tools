@@ -1,8 +1,0 @@
-#!/bin/sh
-h=`xtermmaxheight 15 - 4`
-x=100
-if [ -r $HOME/xscratch/$DISPLAY/SCREENWIDTH ] ; then
-    x=`cat $HOME/xscratch/$DISPLAY/SCREENWIDTH`
-    x=`expr '(' ${x} - 80 '*' 9 ')' / 4`
-fi
-echo 80x${h}+${x}+60

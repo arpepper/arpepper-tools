@@ -1,7 +1,0 @@
-#!/bin/sh
-a="$1"
-if [ -z "$a" ]; then
-   a="25"
-fi
-xsetrdb 'XTerm*vt100.geometry' \
-  `xgetrdb 'XTerm*vt100.geometry' 80x25+0+60 | sed "s/x[0-9][0-9]*\([-+]\)/x${a}\1/"`

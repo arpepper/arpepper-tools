@@ -1,2 +1,0 @@
-#!/bin/sh
-lynx -dump 'http://www.tse.com/cgi-bin/clan_quote?securityType=TSE-INDEX&indexType=TSE3000000' | awk '/  Last Updated/{c=7}{if(c > 0) {print;--c} }'

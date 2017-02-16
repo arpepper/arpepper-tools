@@ -1,5 +1,0 @@
-#!/bin/csh -f
-xvim -e screen &
-xvim -e screen &
-xvim -e screen &
-exec xvim -e screen

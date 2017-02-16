@@ -1,5 +1,0 @@
-#!/bin/sh
-tfile="/tmp/arp.proof$$"
-cat >${tfile}
-cat ${tfile}
-(xmessage -fg black -bg white -file ${tfile}; rm ${tfile}) &

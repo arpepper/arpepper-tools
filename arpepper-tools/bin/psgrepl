@@ -1,9 +1,0 @@
-#!/bin/csh -f
-setenv PATH `/bin/showpath vendor`
-set pat = "$1"
-set pids = `ps -ae | awk '$4 ~ /'"$pat"'/ {print $1}'`
-set pids = `echo "$pids" | sed 's/ /,/g'`
-#echo $pids
-if ( "x$pids" != "x" ) then
-	ps -flp "$pids"
-endif

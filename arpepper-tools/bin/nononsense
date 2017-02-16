@@ -1,8 +1,0 @@
-#!/bin/csh -f
-# designed to be source'd
-
-foreach v ( `printenv | grep '^LC_' | perl -ane ' s/=.*//g; print; '` `printenv | grep '^LANG='  | perl -ane ' s/=.*//g; print; '` )
-	echo "$v"
-	unsetenv "$v"
-end
-

@@ -1,7 +1,0 @@
-#!/bin/csh -f
-
-foreach u ( $* )
-	ps -u  $u | tail +2 | awk '{print "'"$u"':",$NF}' | \
-		sort | uniq -c | sort -nr
-end
-

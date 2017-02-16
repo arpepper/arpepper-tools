@@ -1,5 +1,0 @@
-#!/bin/sh
-#(really ksh should be as follows: )
-#!/xhbin/nawk
-#echo /xhbin/nawk -f /u/arpepper/bin/rlogsum.nawk dummy "$@"
-nawk -f /u/arpepper/bin/rlogsum.nawk dummy "$@"

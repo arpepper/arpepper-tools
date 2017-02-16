@@ -1,7 +1,0 @@
-#!/bin/csh -f
-
-sed -e 's/%/?/g' \
-    -e '/^dn:/s/,.*/:/' \
-    -e 's/^dn: *uid=/%/' \
-    -e 's/^mailRoutingAddress: *//' | \
-	tr -d '\012' | tr '%' '\012' | ( tail +2  ; echo "" )

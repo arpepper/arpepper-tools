@@ -1,6 +1,0 @@
-#!/bin/bash
-
-c=$0
-c=`echo "$c" | sed 's:.*/::'`
-
-echo "Do not run '$c' here anymore"'!'

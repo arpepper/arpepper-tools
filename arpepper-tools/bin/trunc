@@ -1,4 +1,0 @@
-#!/bin/csh -f
-set width = 79
-if ( "x$1" != "x" ) set width = "$1"
-awk '{if (length($0) <= '"$width"') {print $0} else {print substr($0,1,'"$width"');} }'

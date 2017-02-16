@@ -1,7 +1,0 @@
-#!/bin/sh
-results=`grep -i "$*" /u/arpepper/.timex/projectlist | sed -e 's/^[^#]*#//g' -e 's/ .*//g' -e '/^$/d'`
-if [ "x$results" = "x" ] ; then
-	results=`awk '/^Id:/{printf("%s\n",$0);};/^Subject:/{printf("%s ",$0);};' < /u1/wcwince/software/todo/data/ToDo | grep -i "$*" | sed -e 's/^.*Id: //g'`
-	
-fi
-echo "$results"

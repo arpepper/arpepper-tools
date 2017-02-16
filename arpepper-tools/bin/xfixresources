@@ -1,2 +1,0 @@
-#!/bin/bash -f
-xrdb -q | sed 's/ //g' | xrdb -merge

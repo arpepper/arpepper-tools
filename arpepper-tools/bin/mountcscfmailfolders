@@ -1,2 +1,0 @@
-#!/bin/csh -f
-exec sshfs arpepper@cscf.cs.uwaterloo.ca:mail /home/arpepper/mail/cscf.cs -o sshfs_sync -o idmap=user -o allow_root

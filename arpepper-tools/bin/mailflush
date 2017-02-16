@@ -1,6 +1,0 @@
-#!/bin/csh -f
-
-/home/arpepper/bin/rt-processor < /dev/null >& /dev/null
-/home/arpepper/bin/nagios-processor < /dev/null >& /dev/null
-
-exit 0

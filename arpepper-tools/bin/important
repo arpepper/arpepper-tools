@@ -1,4 +1,0 @@
-#!/bin/bash
-
-ls -a | sort | sed -e '/^[.]$/d' -e '/^[.][.]$/d' -e '/[Bb]ackup/d'
-

@@ -1,5 +1,0 @@
-#!/bin/csh -f
-
-# -force_secure should set "not secure".  Duh. ?
-setenv SSL_CERT_FILE /home/arpepper/Bookit/certchain.pem
-lynx -accept_all_cookies -cookie_file=/home/arpepper/Bookit/cookies -cookie_save_file=/home/arpepper/Bookit/cookies https://bookit.uwaterloo.ca/

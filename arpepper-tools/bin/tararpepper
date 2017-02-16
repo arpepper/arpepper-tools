@@ -1,5 +1,0 @@
-#!/bin/csh -f
-
-cd /home
-exec tar cpf - arpepper
-

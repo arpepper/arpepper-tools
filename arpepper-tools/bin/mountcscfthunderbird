@@ -1,6 +1,0 @@
-#!/bin/csh -f
-
-set PDIR=~/.thunderbird/vkcq6p82.local2
-set RPDIR=tmpdir/tmp/thunderbird-profile-local2
-
-exec sshfs arpepper@cs-xh-admin.cs.private.uwaterloo.ca:$RPDIR  $PDIR -o nonempty -o follow_symlinks -o idmap=user -o sshfs_sync -o reconnect

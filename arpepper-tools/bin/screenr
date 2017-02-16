@@ -1,8 +1,0 @@
-#!/bin/csh -f
-
-set SCREEN =  `screen -list | grep Detached | sed 's/[.].*//' | head -1`
-if ( "x$SCREEN" == "x" ) then
-	echo No detached screens to resume'!'
-	exit
-endif
-exec screen -r $SCREEN

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-/home/arpepper/bin/xtyubiyell
-/usr/lib/indicator-session/gtk-logout-helper --logout

@@ -1,3 +1,0 @@
-#!/bin/csh -f
-exec sshfs arpepper@cscf.cs.uwaterloo.ca: /home/arpepper/mnt/cscf.cs -o sshfs_sync -o reconnect
-
