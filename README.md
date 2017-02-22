@@ -3,4 +3,6 @@ Accumulated shell scripts
 
 https://github.com/arpepper/arpepper-tools.git
 
+e.g. "git clone https://github.com/arpepper/arpepper-tools.git"
+
 To obtain the latest copy on branch "master"... curl -L -O https://github.com/arpepper/arpepper-tools/archive/master.tar.gz
