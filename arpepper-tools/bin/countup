@@ -29,12 +29,13 @@ sub
 logcount {
 	my ($s) = @_;
 	open(LOG,">>"."$HOME/.countup.log");
-	$s =~ s/\r//g;
+	$s =~ s/[\r\n]//g;
 	print LOG $s,"\n";
 	close(LOG);
 }
 
 display($nowtime-$starttime);
+logcount("");
 logcount($visible . `date`);
 
 while (1) {
