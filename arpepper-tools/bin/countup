@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+$notes = join(" ",@ARGV);
+
 $starttime=`date +%s`;
 $nowtime=$starttime;
 $visible="\r00:00:00  ";
@@ -30,7 +32,7 @@ logcount {
 	my ($s) = @_;
 	open(LOG,">>"."$HOME/.countup.log");
 	$s =~ s/[\r\n]//g;
-	print LOG $s,"\n";
+	print LOG $s," ",$notes,"\n";
 	close(LOG);
 }
 

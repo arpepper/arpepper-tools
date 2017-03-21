@@ -11,6 +11,8 @@ if [[ "$xrm" != "" ]] ; then
 	echo $xrgeo
 fi
 
+args="$*";
+#echo $args;
 
 #    $faces \
 #    -xrm '*renderFont:on' \
@@ -26,5 +28,6 @@ xterm \
     -xrm '*RenderFont:on' \
     +ah \
     -fs 16 \
-    -e /home/arpepper/bin/countup
+    -e /home/arpepper/bin/countup "$args" \
+    &
 
