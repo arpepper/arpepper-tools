@@ -27,14 +27,15 @@ $HOME=~s/\n//g;
 
 sub
 logcount {
+	my ($s) = @_;
 	open(LOG,">>"."$HOME/.countup.log");
-	$visible =~ s/\r//;
-	print LOG $visible,"\n";
+	$s =~ s/\r//g;
+	print LOG $s,"\n";
 	close(LOG);
 }
 
 display($nowtime-$starttime);
-logcount($visible);
+logcount($visible . `date`);
 
 while (1) {
 	for ($sec=0; $sec < 60; ++ $sec) {
