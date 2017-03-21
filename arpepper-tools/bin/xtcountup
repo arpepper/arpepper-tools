@@ -18,7 +18,7 @@ fi
 #    -xrm '*FaceName:Dejavu mono' \
 #    -xrm '*faceName:Dejavu mono' \
 xterm \
-    -xrm hold:1 \
+    -xrm '*:hold:true' \
     -xrm "$xrgeo" \
     -bg '#efefef' -fg '#0f0f0f' \
     -fa x \
