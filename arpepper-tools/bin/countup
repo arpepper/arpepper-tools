@@ -1,0 +1,48 @@
+#!/usr/bin/perl -w
+
+$starttime=`date +%s`;
+$nowtime=$starttime;
+$visible="\r00:00:00  ";
+
+$| = 1;
+
+sub
+display {
+	my ($showtime) = @_;
+	my ($hh,$mm,$ss);
+
+	$showtime %= (24 * 60 * 60 );
+	$ss = $showtime % 60;
+	$showtime /= 60;
+	$mm = $showtime % 60;
+	$showtime /= 60;
+ 	$hh = $showtime;
+	$visible = sprintf("\r%-2.2d:%-2.2d:%-2.2d  ",$hh,$mm,$ss);
+	print $visible;
+}
+
+$HOME=`bash -c "echo ~"`;
+$HOME=~s/\n//g;
+#printf("$HOME\n");
+
+sub
+logcount {
+	open(LOG,">>"."$HOME/.countup.log");
+	$visible =~ s/\r//;
+	print LOG $visible,"\n";
+	close(LOG);
+}
+
+display($nowtime-$starttime);
+logcount($visible);
+
+while (1) {
+	for ($sec=0; $sec < 60; ++ $sec) {
+		sleep(1);
+		++$nowtime;
+		display($nowtime-$starttime);
+	}
+	logcount($visible);
+	$nowtime = `date +%s`;
+	
+}

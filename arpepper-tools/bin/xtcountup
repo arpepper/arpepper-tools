@@ -1,0 +1,30 @@
+#!/bin/bash -f
+
+WGEO='10x1+0+0'
+xrgeo='*geometry:'"$WGEO"
+
+xrm=`xrdb -q | grep -i 'xterm.*geometry' | head -1`
+if [[ "$xrm" != "" ]] ; then
+	xrgeo=`echo "$xrm" | \
+		sed 's/^[xX][Tt][Ee]/xte/' |
+		sed 's/:.*/'":${WGEO}"'/g'`
+	echo $xrgeo
+fi
+
+
+#    $faces \
+#    -xrm '*renderFont:on' \
+#    -xrm '*RenderFont:on' \
+#    -xrm '*FaceName:Dejavu mono' \
+#    -xrm '*faceName:Dejavu mono' \
+xterm \
+    -xrm hold:1 \
+    -xrm "$xrgeo" \
+    -bg '#efefef' -fg '#0f0f0f' \
+    -fa x \
+    -xrm '*renderFont:on' \
+    -xrm '*RenderFont:on' \
+    +ah \
+    -fs 16 \
+    -e /home/arpepper/bin/countup
+
