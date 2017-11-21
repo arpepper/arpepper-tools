@@ -48,6 +48,7 @@ mail {
 }
 
 $end = 0;
+#? chdir "$HOME/rt/";
 while (<>) {
 	if ($_ =~ /^From /) {
 		$end = 0;
@@ -58,8 +59,9 @@ while (<>) {
 	$fromseen = 0;
 	$from = "";
 	$line = $_;
+	$rtno = 0;
 	# done one message
-	while (defined($line) && $line =~ /\n/) {
+	while (defined($line) && $line ne "\n" && $line =~ /\n/ ) {
 		$line =~ s/\n//g;
 		if ( $line =~ /^From: / ) {
 			next if ($fromseen);
@@ -67,18 +69,40 @@ while (<>) {
 			if ( ( $line =~ /^From: .*<[rs]t-(owner|comment)[^@]*@/i ) ) {
 				$from = "RT";
 			}
+			elsif ( ( $line =~ /^From: .*<[rs]t[^@]*@/i ) ) {
+				# From: "Fraser Gunn via RT" <rt@rt.uwaterloo.ca>
+				$from = "RT";
+			}
 			else {
 				$from = "";
 				$efrom = $line;
 			}
 		}
-		if ( $line =~ /^Subject/ ) {
-			$line =~ m@^Subject: \[UW-M[FA][CT][HF] #([0-9]+)\] *(.*)@;
-			if (defined($1)) { $rtno = $1; }
+		if ( $line =~ /^Subject: /i ) {
+			undef $subject;
+			$line =~ m@^Subject: \[UW-(RT|MATH|MFCF|CSCF)\s+#([0-9]+)\] *(.*)@i;
 			if (defined($2)) {
-				$subject = $2;
-				$subject =~ s/(.{1,60}).*/$1/;
+				$rtno = $2 if $rtno == 0;
+				if (defined($3)) {
+					$subject = $3;
+					$subject =~ s/(.{1,64}).*/$1/;
+				}
 			}
+			else {
+				$subject = $line;
+				$subject =~ s/^Subject\:\s*//;
+				$subject =~ s/(.{1,64}).*/$1/;
+			}
+		}
+		if ( $line =~ /^X-ST-SerialNum/i ) {
+			# this is canonical, for now
+			$line =~ m@^X-ST-SerialNum:\s*([0-9]+)@;
+			if (defined($1)) { $rtno = $1; }
+		}
+		if ( $line =~ /^X-RT-Ticket:/i ) {
+			# mooving to IST RT
+			$line =~ m@^X-RT-Ticket:\s+[^#]+#([0-9]+)@i;
+			if (defined($1)) { $rtno = $1; }
 		}
 		if ( $line =~ m@^From @ ) {
 			last;
