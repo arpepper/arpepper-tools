@@ -6,13 +6,17 @@
 # messy.
 #
 
+$HOME = $ENV{'HOME'};
+if ( !defined($HOME) || $HOME eq "" ) {
+	$HOME = "/home/arpepper";
+}
+
 #$newpath = `/bin/showpath /u/arpepper/bin usedby=maintainer filetools gnu standard`;
 $path = $ENV{'PATH'};
 
 if ( $path eq "") {
 	$path = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
 }
-$HOME = "/home/arpepper";
 $newpath = "$HOME/bin:$path";
 if ( $newpath ne "" ) {
         $ENV{'PATH'} = $newpath;
@@ -72,6 +76,9 @@ if ( $mbox eq "-a" ) {
 if ( $mbox =~ m:^/u[^/]*/arpepper/mail/: ) {
 	$mbox =~ s:^/u[^/]*/arpepper/mail/:: ;
 }
+if ( $mbox =~ m:^/home/arpepper/mail/: ) {
+	$mbox =~ s:^/home/arpepper/mail/:: ;
+}
 if ( ! -d "$HOME/mail-processor/$mbox" ) {
 	system("mkdir -p $HOME/mail-processor/$mbox");
 }
@@ -99,8 +106,14 @@ $dow += 0;
 if ($dow < 1 || 5 < $dow) {
 	$frequent = 0;
 }
-$then = `stat last -headings +mtime -pathname`;
-$then += 0;
+# $then = `stat last -headings +mtime -pathname`;
+if ( -d "last" ) {
+	$then = `/usr/bin/stat -c %Y last`;
+	$then += 0;
+}
+else {
+	$then = 0;
+}
 # A problem is first message in a batch gets sent off alone
 # Would really like to wait five minutes to accumulate a batch
 # 
