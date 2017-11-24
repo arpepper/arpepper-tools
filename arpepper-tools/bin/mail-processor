@@ -155,6 +155,7 @@ while (<>) {
 	next if $end;
 	$fromseen = 0;
 	$from = "";
+	$efrom = "";
 	$line = $_;
 	$rtno = 0;
 	# done one message
