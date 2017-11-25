@@ -147,7 +147,7 @@ if ( (( $frequent && (($now - $then) >= (60*60) ) )
 #}
 
 while (<>) {
-	if ($_ =~ /^From /) {
+	if ($_ =~ /^From /) {   # /^From /i ?
 		$end = 0;
 		next;
 	}
@@ -161,7 +161,7 @@ while (<>) {
 	# done one message
 	while (defined($line) && $line ne "\n" && $line =~ /\n/ ) {
 		$line =~ s/\n//g;
-		if ( $line =~ /^From: / ) {
+		if ( $line =~ /^From: /i ) {
 			next if ($fromseen);
 			$fromseen = 1;
 			$from = "Someone";
@@ -183,16 +183,16 @@ while (<>) {
 				$subject =~ s/(.{1,64}).*/$1/;
 			}
 			while (<>) {
-				$line = $_;
-				$line =~ s/\n//g;
-				# really should generalize multi-line]
-				if ($line !~ /^\s+/ ) {
+				$cline = $line = $_;
+				$cline =~ s/\n//g;
+				# really should generalize multi-line
+				if ($cline !~ /^\s+/ ) {
 					# process in next iteration
 					last;
 				}
 				else {
-					$line =~ s/^\s+//;
-					$subject .= " " . "$line";
+					$cline =~ s/^\s+//;
+					$subject .= " " . "$cline";
 				}
 			}
 		}
@@ -205,7 +205,7 @@ while (<>) {
 		}
 	}
 	if ( defined($line) && $line =~ m@^From @ ) {
-		# No more lines to eat
+		# No more lines to eat; start new message
 		$end = 0;
 	}
 	else {
