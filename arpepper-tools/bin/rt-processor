@@ -179,7 +179,8 @@ if ( (( $frequent && (($now - $then) >= (60*60) ) )
 	$items = 0 + `cat summary-recent | wc -l`;
 	$messages = 0 + `cat recent | wc -l`;
 	# Really we want to wait some time after first new message arrives
-	mail("summary-recent", "" . "\n", "Summary RT activity $messages/$items");
+	mail("summary-recent", "" . "\n", "][RT $messages/$items summary");
+
 	system("cp -p recent last");
 	system("cp -p summary-recent last");
 	$r = "recent";

@@ -41,7 +41,9 @@ mail {
 
 	#print "mail $file $subject\n";
 	#return;
-	open(PIPE,"|/usr/lib/sendmail -bm arpepper\@cs.uwaterloo.ca");
+	#open(PIPE,"|/usr/lib/sendmail -bm arpepper\@cs.uwaterloo.ca");
+	#printf(PIPE "From: Adrian Pepper <arpepper\@uwaterloo.ca>\n");
+	open(PIPE,"|/usr/lib/sendmail -f arpepper\@localhost -bm arpepper\@localhost");
 	printf(PIPE "From: Adrian Pepper <arpepper\@uwaterloo.ca>\n");
 	printf(PIPE "Subject: %s\n", $subject);
 	printf(PIPE "\n");
@@ -130,7 +132,8 @@ if ( (( $frequent && (($now - $then) >= (60*60) ) )
 	$messages = 0 + `cat recent | wc -l`;
 	if ( $items != 0 || $messages != 0 ) {
 		# Really we want to wait some time after first new message arrives
-		mail("summary-recent", "" . "\n", "Summary $mbox activity $messages/$items");
+		#mail("summary-recent", "" . "\n", "Summary $mbox activity $messages/$items");
+		mail("summary-recent", "" . "\n", "][$mbox $messages/$items summary");
 		system("cp -p recent last");
 		system("cp -p summary-recent last");
 		$r = "recent";
@@ -174,13 +177,12 @@ while (<>) {
 				$rtno = $2 if $rtno == 0;
 				if (defined($3)) {
 					$subject = $3;
-					$subject =~ s/(.{1,64}).*/$1/;
 				}
 			}
 			else {
 				$subject = $line;
 				$subject =~ s/^Subject\:\s*//;
-				$subject =~ s/(.{1,64}).*/$1/;
+				$subject =~ s/^[Rr][Ee]:/Re:/;
 			}
 			while (<>) {
 				$cline = $line = $_;
@@ -195,6 +197,7 @@ while (<>) {
 					$subject .= " " . "$cline";
 				}
 			}
+			$subject =~ s/(.{1,90}).*/$1/;
 		}
 		elsif ( $line =~ m@^From @ ) {
 			last;
@@ -248,6 +251,8 @@ system("mv summary-recent-$$ summary-recent");
 #
 $frequent = 0;
 if ( -f "./important" ) {
+	# Should probably use a file of variables (how to cache?)
+	# Also, I'd misremembered the flag file name as "./frequent" ...
 	#$hour=`/software/gnu/bin/date "+%H"`;
 	$hour=`/bin/date "+%H"`;
 	$hour += 0;
@@ -265,13 +270,17 @@ if ( -f "./important" ) {
 }
 # Problem is first message in a batch gets sent off alone
 # Would really like to wait five minutes to accumulate a batch
+# 
+$DEFAULTHOURS = 18;  # used to be "8"
 if ( (( $frequent && (($now - $then) >= (60*60) ) )
-	 || (($now - $then) >= (8*60*60)) )  ) {
+	 || (($now - $then) >= (${DEFAULTHOURS}*60*60)) )  ) {
+	# This works okay, but more arbitrary archives might be nice
 	$items = 0 + `cat summary-recent | wc -l`;
 	$messages = 0 + `cat recent | wc -l`;
 	if ( $items != 0 || $messages != 0 ) {
 		# Really we want to wait some time after first new message arrives
-		mail("summary-recent", "" . "\n", "Summary $mbox activity $messages/$items");
+		#mail("summary-recent", "" . "\n", "Summary $mbox activity $messages/$items");
+		mail("summary-recent", "" . "\n", "][$mbox $messages/$items summary");
 		system("cp -p recent last/");
 		system("cp -p summary-recent last/");
 		$r = "recent";
