@@ -1,4 +1,37 @@
-#!/bin/bash -f
+head	1.3;
+access;
+symbols;
+locks
+	cscf-adm:1.3; strict;
+comment	@# @;
+
+
+1.3
+date	2019.07.02.21.44.19;	author cscf-adm;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2019.07.02.21.40.18;	author cscf-adm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2019.07.01.22.41.48;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Remove diagnostics.
+@
+text
+@#!/bin/bash -f
 
 #echo HOME=$HOME
 xvimd="$HOME/.xvim.d"
@@ -64,12 +97,12 @@ declare -a dims=(
 #xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f'
 #xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f' -xrm '*Color:#efefef'
 #xterm -xrm '*geometry:80x55' -bg '#efefef' -fg '#0f0f0f' -fs 1
-args="$@"
+args="$@@"
 #echo $args
 #echo $DISPLAY
 #echo args = "${args}"
 #echo args2 = "${args[2]}"
-#echo args2 = "${@}[2]"
+#echo args2 = "${@@}[2]"
 eargs=`echo "${args}" | sed 's/ *-e .*//'`
 
 
@@ -186,7 +219,7 @@ xterm \
     -xrm '*Logfile:/home/arpepper/xterm.log' \
     -fs $fs \
     -xrm "*geometry:80x$height" \
-    -sb -sl 15000 "$@"
+    -sb -sl 15000 "$@@"
 
 #Note:
 #  -bg  xterm*background: or XTerm*background:
@@ -212,3 +245,91 @@ xterm \
 # Later this stopped working in some environments.
 #
 
+@
+
+
+1.2
+log
+@Much rearranging and a little modification.
+ 
+Will interpret ~/.xvim.d/fs as default standard font size.
+Also does calculations base on discovered "-fs" option.
+@
+text
+@d17 1
+a17 1
+echo fs=$fs
+a100 2
+echo fs=$fs
+echo dim ${dims[$fs]}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d2 16
+a17 11
+#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm '*.background:#efefef' -xrm '*.foreground:#0f0f0f' -e vim
+#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f'
+#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f' -xrm '*Color:#efefef'
+#xterm -xrm '*geometry:80x55' -bg '#efefef' -fg '#0f0f0f' -fs 1
+args="$@@"
+#echo $args
+#echo $DISPLAY
+#echo args = "${args}"
+#echo args2 = "${args[2]}"
+#echo args2 = "${@@}[2]"
+eargs=`echo "${args}" | sed 's/ *-e .*//'`
+d55 49
+d117 2
+a118 2
+		faces="$faces -xrm *FaceSize:12"
+		faces="$faces -xrm *faceSize:12"
+d131 1
+d140 2
+a150 33
+# RESTART
+# point size should be height, in absolute units 1/72 of 25.4mm
+# E.g. height 296mm = 296 * 72 / 25.4 = 839 points
+# fs 10 should give 80 chars or so... but doesn't
+# 
+# Empirically, fs appears to be pixels; could it be height?
+#   No, appears to be width.
+
+fs=12
+sizenext=0
+for a in $eargs
+do
+	if (( $sizenext > 0 ))
+	then
+# Problem: oversized fs is passed by xterm even though we don't accept it
+		if (( ( 0 < $a ) && ( $a < 26 ) ))
+		then
+			fs=$a
+			#fs=`echo "$fs" | sed 's/^.*x//'`
+			#echo fs=$fs
+		fi
+		sizenext=0
+	fi
+	case $a in
+	(-fs)
+		sizenext=1
+		;;
+	(*)
+		sizenext=0
+	esac
+done
+#echo fs=$fs
+#echo dim ${dims[$fs]}
+d162 3
+a164 2
+height=`xwininfo -root | grep '^ *Height:  *' | sed 's/^.*: //'`
+height=`expr '(' $height - 96 ')' / $cheight`
+d169 2
+d189 1
+a189 1
+    -fs 12 \
+@
