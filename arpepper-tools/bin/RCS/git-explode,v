@@ -1,0 +1,150 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2018.08.02.17.44.04;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2018.06.21.21.09.29;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Put a clone of a repository under the current directory.
+And then create a directory "branches" containing all the branches.
+@
+
+
+1.2
+log
+@Looks like only "master" cannot have the same name locally.
+@
+text
+@#!/bin/bash
+
+die() { echo "$*" 1>&2 ; exit 1; }
+
+repo="$1"
+
+#echo $repo
+
+if [ "x$repo" = "x" ]; then
+	echo "Usage: git-explode [repo]"
+	exit 1
+fi
+
+if [ -d repository ]; then
+	echo "Directory repository already exists."
+	exit 1
+fi
+
+if [ -d branches ]; then
+	echo "Directory branches already exists."
+	exit 1
+fi
+
+mkdir repository branches
+# umask sufficient?
+
+cd repository || exit 2
+
+result=`git clone --bare "$repo" 2>&1`
+
+cd ..
+
+fresult=`grep -i '^fatal:' <<< "$result" `
+rc=`wc -l <<< "$result" `
+fc=`wc -l <<< "$fresult" `
+# Grrr above tends to return "1" when i should return 0
+fc=`wc -w <<< "$fresult" `
+#echo $rc $fc
+#cat <<< "$result"
+#cat <<< "$fresult"
+#wc <<< "$fresult"
+
+
+if [ $fc != 0 ] ; then
+	echo "Apparent fatal result from git clone..."
+	sed -e 's/^/... /'  <<< "$fresult"
+	exit 1
+fi
+# Weirdness...
+# git clone of a remote gives only the "Cloning" line.
+# git clone of a local adds a line "done."
+dresult=`grep -i -v '^done[.] *$' <<< "$result"`
+drc=`wc -l <<< "$dresult" `
+if [ $drc != 1 ] ; then
+	# Print entire result for better analysis
+	echo "Unexpected result from git clone..."
+	sed -e 's/^/... /'  <<< "$result"
+	exit 1
+fi
+cresult=`grep -i '^cloning' <<< "$result"`
+cat <<< "$cresult"
+crc=`wc -l <<< "$cresult" `
+if [ $crc != 1 ] ; then
+	# Print entire result for better analysis
+	echo "Unexpected result from git clone..."
+	sed -e 's/^/... /'  <<< "$result"
+	exit 1
+fi
+
+hererepo=`( sed -e 's/^[a-z0-9A-Z ]*//' -e "s/['][^']*$//"  -e "s/^[^']*[']//" ) <<< "$cresult"`
+
+hererepo="repository/$hererepo"
+
+cat <<< "$hererepo"
+
+if [ ! -d "$hererepo" ] ; then
+	echo "Unexpectedly $hererepo is not a directory..."
+	exit 1
+fi
+if [ ! -f "$hererepo/config" ] ; then
+	echo "Unexpectedly ${hererepo}/config is not a file..."
+	exit 1
+fi
+
+branches=`cd $hererepo ; git branch -a | sed -e 's/^[*]//' -e 's/^ *//' `
+pwd
+echo "Branches..."
+sed 's/^/... /' <<< "$branches"
+
+brefhererepo="../../$hererepo"
+cd branches || die "cd branches unexpectedly failed"
+for b in `cat <<< "$branches" `  ; do
+	echo prepare $b
+	mkdir $b
+	localb="$b"
+	if [ "x${localb}" = "xmaster" ] ; then
+		localb="mymaster"
+	fi
+	(cd $b ; git init) || die "Error in git init"
+	(cd $b ; git fetch "$brefhererepo" +"${b}:${localb}" ) || die "Error in git fetch"
+	(cd $b ; git checkout "${localb}" ) || die "Error in git checkout"
+done
+
+
+
+exit 0
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d95 4
+d100 2
+a101 2
+	(cd $b ; git fetch "$brefhererepo" +"${b}:my${b}" ) || die "Error in git fetch"
+	(cd $b ; git checkout "my${b}" ) || die "Error in git checkout"
+@
