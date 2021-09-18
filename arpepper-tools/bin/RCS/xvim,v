@@ -1,34 +1,97 @@
-head	1.3;
+head	1.10;
 access;
 symbols;
 locks
-	cscf-adm:1.3; strict;
+	arpepper:1.10; strict;
 comment	@# @;
 
 
+1.10
+date	2021.09.18.19.24.34;	author arpepper;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2021.05.05.23.05.19;	author arpepper;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2021.05.05.22.13.23;	author arpepper;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2021.05.05.21.50.25;	author arpepper;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2019.07.23.16.08.57;	author arpepper;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2016.04.19.15.47.45;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2016.04.19.15.39.07;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
 1.3
-date	2019.07.02.21.44.19;	author cscf-adm;	state Exp;
+date	2013.10.28.19.40.07;	author arpepper;	state Exp;
 branches;
 next	1.2;
 
 1.2
-date	2019.07.02.21.40.18;	author cscf-adm;	state Exp;
+date	2011.01.17.16.06.29;	author arpepper;	state Exp;
 branches;
 next	1.1;
 
 1.1
-date	2019.07.01.22.41.48;	author root;	state Exp;
+date	2011.01.17.15.28.36;	author arpepper;	state Exp;
 branches;
 next	;
 
 
 desc
-@@
+@Designed to run vim in an X window, can be used to start an X window.
+@
 
 
-1.3
+1.10
 log
-@Remove diagnostics.
+@Forcibly switched at this point to a new history.
+Closed correspondence to previous history (RCS/xvim,v) seemed to
+be old 1.3 with the 1.6 here.
+
+--- gitxvim/xvim1.3     2021-09-18 15:00:38.470281291 -0400
++++ lubuntu6xvim/xvim1.6        2021-09-18 14:57:00.691359547 -0400
+@@@@ -98,0 +99,10 @@@@
++g=""
++# Note: no // around RE
++if [[ "${eargs}" =~ "-g" ]]
++then
++       # Following would be fooled by e.g. -title our-geometry
++       g=`echo "${eargs}" | sed 's/^.*-g/-g/' | sed 's/^-g[^ ]*  *\([^ ]*\).*/\1/'`
++       eargs=`echo "${eargs}" | sed 's/-g[^ ]* [^ ]*//'`
++fi
++echo g="$g" eargs="${eargs}"
++
+@@@@ -190,0 +201 @@@@
++# Problem if we want to manipulate "$@@" contents
+
+revision 1.3    locked by: cscf-adm;
+date: 2019/07/02 21:44:19;  author: cscf-adm;  state: Exp;  lines: +1 -3
+
+revision 1.6
+date: 2019/07/23 16:08:57;  author: arpepper;  state: Exp;  lines: +144 -5
+ 
+I know this is weird trying to use RCS files to supplement git change
+history.
 @
 text
 @#!/bin/bash -f
@@ -51,7 +114,7 @@ fi
 
 # Following was determined by running xterm with successive -fs
 # and using "xwininfo" to get the info for those selectively sized windows.
-declare -a dims=(
+declare -a olddims=(
         "0x0"
         "1x3"
         "2x4"
@@ -79,6 +142,72 @@ declare -a dims=(
         "19x38"
         "20x39"
 )
+
+# Calculated new values...
+# 1:1x2
+# 2:1x3
+# 3:2x4
+# 4:3x5
+# 5:3x7
+# 6:4x8
+# 7:4x10
+# 8:5x11
+# 9:6x13
+# 10:6x14
+# 11:7x15
+# 12:8x16
+# 13:8x18
+# 14:9x19
+# 15:9x20
+# 16:10x21
+# 17:11x24
+# 18:11x25
+# 19:12x26
+# 20:13x27
+# 21:13x29
+# 22:14x30
+# 23:14x31
+# 24:15x32
+# 25:16x34
+# 26:16x35
+# 27:17x37
+# 28:18x38
+# 29:18x40
+# 30:19x40
+declare -a dims=(
+        "0x0"
+        "1x2"
+        "1x3"
+        "2x4"
+        "3x5"
+        "3x7"
+        "4x8"
+        "4x10"
+        "5x11"
+        "6x13"
+        "6x14"
+        "7x15"
+        "8x16"
+        "8x18"
+        "9x19"
+        "9x20"
+        "10x21"
+        "11x24"
+        "11x25"
+        "12x26"
+        "13x27"
+        "13x29"
+        "14x30"
+        "14x31"
+        "15x32"
+        "16x34"
+        "16x35"
+        "17x37"
+        "18x38"
+        "18x40"
+        "19x40"
+)
+
 
 #for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
 #do
@@ -113,7 +242,7 @@ do
 	if (( $sizenext > 0 ))
 	then
 # Problem: oversized fs is passed by xterm even though we don't accept it
-		if (( ( 0 < $a ) && ( $a < 26 ) ))
+		if (( ( 0 < $a ) && ( $a < 31 ) ))
 		then
 			fs=$a
 			#fs=`echo "$fs" | sed 's/^.*x//'`
@@ -129,6 +258,16 @@ do
 		sizenext=0
 	esac
 done
+g=""
+# Note: no // around RE
+if [[ "${eargs}" =~ "-g" ]]
+then
+	# Following would be fooled by e.g. -title our-geometry
+	g=`echo "${eargs}" | sed 's/^.*-g/-g/' | sed 's/^-g[^ ]*  *\([^ ]*\).*/\1/'`
+	eargs=`echo "${eargs}" | sed 's/-g[^ ]* [^ ]*//'`
+fi
+#echo g="$g" eargs="${eargs}"
+
 #echo fs=$fs
 #echo dim ${dims[$fs]}
 
@@ -192,7 +331,13 @@ cheight=`echo "$cheight" | sed 's/^.*x//'`
 #height=`xrandr --current | grep ' connected ' | awk '{print $3}' | sed 's/[^x]*x//' | sed 's/[+].*//' | sort -n | head -1`
 pheight=`xwininfo -root | grep '^ *Height:  *' | sed 's/^.*: //'`
 # 96 should be a parameter; represents normal vertical screen use
-height=`expr '(' $pheight - 96 ')' / $cheight`
+# height=`expr '(' $pheight - 96 ')' / $cheight`
+vusage=80
+if (( $fs > 6 ))
+then
+	vusage=48
+fi
+height=`expr '(' $pheight - $vusage ')' / $cheight`
 #echo height=$height
 # PROBLEM: fs is the width, height can vary; usually 2 is good estimate
 # We worked this out; $dims provides the answer.
@@ -221,6 +366,7 @@ xterm \
     -xrm "*geometry:80x$height" \
     -sb -sl 15000 "$@@"
 
+# Problem if we want to manipulate "$@@" contents
 #Note:
 #  -bg  xterm*background: or XTerm*background:
 #  -fg  xterm*foreground: or XTerm*foreground
@@ -248,20 +394,259 @@ xterm \
 @
 
 
-1.2
+1.9
 log
-@Much rearranging and a little modification.
+@New values.
+Fiddled with vusage for small sizes.
+Also tried adjusting for large sizes.
  
-Will interpret ~/.xvim.d/fs as default standard font size.
-Also does calculations base on discovered "-fs" option.
+Eventually I realized we previously had only handled sizes <= 25.
 @
 text
-@d17 1
+@@
+
+
+1.8
+log
+@A new attempt.
+Use different font table values.
+Also fiddle with the height calculation itself.
+@
+text
+@d51 30
+a80 30
+# 1:1x1
+# 2:1x2
+# 3:2x3
+# 4:3x4
+# 5:3x6
+# 6:4x7
+# 7:4x8
+# 8:5x9
+# 9:6x11
+# 10:6x12
+# 11:7x13
+# 12:8x14
+# 13:8x16
+# 14:9x17
+# 15:9x18
+# 16:10x19
+# 17:11x21
+# 18:11x22
+# 19:12x23
+# 20:13x24
+# 21:13x26
+# 22:14x27
+# 23:14x28
+# 24:15x29
+# 25:16x31
+# 26:16x32
+# 27:17x33
+# 28:18x34
+# 29:18x36
+# 30:19x36
+a82 1
+        "1x1"
+d84 4
+a87 4
+        "2x3"
+        "3x4"
+        "3x6"
+        "4x7"
+d89 5
+a93 5
+        "5x9"
+        "6x11"
+        "6x12"
+        "7x13"
+        "8x14"
+d95 18
+a112 17
+        "9x17"
+        "9x18"
+        "10x19"
+        "11x21"
+        "11x22"
+        "12x23"
+        "13x24"
+        "13x26"
+        "14x27"
+        "14x28"
+        "15x29"
+        "16x31"
+        "16x32"
+        "17x33"
+        "18x34"
+        "18x36"
+        "19x36"
+d149 1
+a149 1
+		if (( ( 0 < $a ) && ( $a < 26 ) ))
+d173 1
+a173 1
+echo g="$g" eargs="${eargs}"
+d239 6
+a244 1
+height=`expr '(' $pheight - 144 ')' / $cheight`
+@
+
+
+1.7
+log
+@A first shot at new values.
+But they cause me to try to have too many lines in a window,
+mostly just marginally, getting worse with increasing size.
+@
+text
+@d51 3
+a53 3
+# 1:1x2
+# 2:1x3
+# 3:2x4
+d62 19
+a80 19
+# 12:8x13
+# 13:8x15
+# 14:9x16
+# 15:9x17
+# 16:10x18
+# 17:11x20
+# 18:11x21
+# 19:12x22
+# 20:13x22
+# 21:13x24
+# 22:14x25
+# 23:14x26
+# 24:15x27
+# 25:16x29
+# 26:16x30
+# 27:17x31
+# 28:18x31
+# 29:18x33
+# 30:19x33
+d83 1
+d85 1
+a85 2
+        "1x3"
+        "2x4"
+d94 2
+a95 3
+        "8x13"
+        "8x15"
+        "9x16"
+d97 2
+a98 2
+        "10x18"
+        "11x20"
+d100 2
+a101 2
+        "12x22"
+        "13x22"
+d103 10
+a112 9
+        "14x25"
+        "14x26"
+        "15x27"
+        "16x29"
+        "16x30"
+        "17x31"
+        "18x31"
+        "18x33"
+        "19x33"
+d238 2
+a239 1
+height=`expr '(' $pheight - 96 ')' / $cheight`
+@
+
+
+1.6
+log
+@Who knows what set of contexts I intended these changes for?
+@
+text
+@d21 1
+a21 1
+declare -a dims=(
+d49 66
+@
+
+
+1.5
+log
+@A change now becoming crucial which recognizes more forms of
+"DISPLAY".  Not everything is on :0.0 anymore.
+@
+text
+@d2 61
+d67 1
+a67 1
+args="$*"
+d70 41
+d125 2
+a126 2
+		faces="$faces -xrm *FaceSize:12"
+		faces="$faces -xrm *faceSize:12"
+d139 3
+d148 32
+a191 1
+    -xrm '*geometry:80x50' \
+d197 3
+a199 1
+    -sb -sl 15000 $args
+d201 1
+@
+
+
+1.4
+log
+@Various fiddling over the years.
+The most important option in getting the "-fs" to work is
+"-fa x" which says that all fonts of the form NxN should be
+included.
+@
+text
+@d17 3
+a19 1
+	:[0-9]*.0|localhost:[0-9]*.0)
+@
+
+
+1.3
+log
+@Remove debugging echo of DISPLAY.
+@
+text
+@d14 1
+d17 1
 a17 1
-echo fs=$fs
-a100 2
-echo fs=$fs
-echo dim ${dims[$fs]}
+	:0.0)
+d23 6
+a28 6
+		faces="$faces -xrm *FaceSize1:12"
+		faces="$faces -xrm *faceSize1:12"
+		faces="$faces -xrm *FaceSize2:12"
+		faces="$faces -xrm *faceSize2:12"
+		faces="$faces -xrm *FaceSize3:12"
+		faces="$faces -xrm *faceSize3:12"
+d31 4
+a34 4
+		faces="$faces -xrm *FaceSize5:12"
+		faces="$faces -xrm *faceSize5:12"
+		faces="$faces -xrm *FaceSize6:12"
+		faces="$faces -xrm *faceSize6:12"
+d41 5
+d61 3
+@
+
+
+1.2
+log
+@Try doing faceSize only for default display.
+@
+text
+@d8 1
+a8 1
+echo $DISPLAY
 @
 
 
@@ -270,66 +655,25 @@ log
 @Initial revision
 @
 text
-@d2 16
-a17 11
-#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm '*.background:#efefef' -xrm '*.foreground:#0f0f0f' -e vim
-#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f'
-#xterm -xrm '*font:6x15' -xrm '*geometry:80x55' -xrm 'Xterm*background:#efefef' -xrm 'Xterm*foreground:#0f0f0f' -xrm '*Color:#efefef'
-#xterm -xrm '*geometry:80x55' -bg '#efefef' -fg '#0f0f0f' -fs 1
-args="$@@"
-#echo $args
-#echo $DISPLAY
-#echo args = "${args}"
-#echo args2 = "${args[2]}"
-#echo args2 = "${@@}[2]"
-eargs=`echo "${args}" | sed 's/ *-e .*//'`
-d55 49
-d117 2
-a118 2
-		faces="$faces -xrm *FaceSize:12"
-		faces="$faces -xrm *faceSize:12"
-d131 1
-d140 2
-a150 33
-# RESTART
-# point size should be height, in absolute units 1/72 of 25.4mm
-# E.g. height 296mm = 296 * 72 / 25.4 = 839 points
-# fs 10 should give 80 chars or so... but doesn't
-# 
-# Empirically, fs appears to be pixels; could it be height?
-#   No, appears to be width.
-
-fs=12
-sizenext=0
-for a in $eargs
-do
-	if (( $sizenext > 0 ))
-	then
-# Problem: oversized fs is passed by xterm even though we don't accept it
-		if (( ( 0 < $a ) && ( $a < 26 ) ))
-		then
-			fs=$a
-			#fs=`echo "$fs" | sed 's/^.*x//'`
-			#echo fs=$fs
-		fi
-		sizenext=0
-	fi
-	case $a in
-	(-fs)
-		sizenext=1
-		;;
-	(*)
-		sizenext=0
-	esac
-done
-#echo fs=$fs
-#echo dim ${dims[$fs]}
-d162 3
-a164 2
-height=`xwininfo -root | grep '^ *Height:  *' | sed 's/^.*: //'`
-height=`expr '(' $height - 96 ')' / $cheight`
-d169 2
-d189 1
-a189 1
-    -fs 12 \
+@d8 32
+d49 1
+a49 14
+    -xrm '*FaceSize:12' \
+    -xrm '*faceSize:12' \
+    -xrm '*FaceSize1:12' \
+    -xrm '*faceSize1:12' \
+    -xrm '*FaceSize2:12' \
+    -xrm '*faceSize2:12' \
+    -xrm '*FaceSize3:12' \
+    -xrm '*faceSize3:12' \
+    -xrm '*FaceSize4:12' \
+    -xrm '*faceSize4:12' \
+    -xrm '*FaceSize5:12' \
+    -xrm '*faceSize5:12' \
+    -xrm '*FaceSize6:12' \
+    -xrm '*faceSize6:12' \
+a52 1
+    -fa 'x' \
+d55 1
+d57 18
 @
