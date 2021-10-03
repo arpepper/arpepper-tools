@@ -1,0 +1,58 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2021.10.03.21.54.54;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@sleep for optional first argument (requires a dash as well as being
+numeric), after echoing any further arguments.
+ 
+It would seem there should be a standard command like this, or that
+one or both of sleep or echo would have grown the functionality.
+
+A place this is useful is for giving to commands e.g. xterm, which
+want to do an exec based on the args you give them.  Arranging to have
+multiple commands executed can be difficult.
+@
+
+
+1.1
+log
+@Initial revision of sleepecho
+
+Tested mostly on u1804firefox when fixing xvim.
+@
+text
+@#!/usr/bin/perl -w
+
+# Shouldn't need perl for this, but it is more regular
+#
+# sleepecho [-number] arguments to echo
+#
+# You would think one of sleep or echo would have grown this functionality
+# Or failing that, someone would have published a third standard command.
+# (It can be useful where sending statement separators is difficult).
+
+$pause=3;
+if (defined($ARGV[0]) ) {
+	$t = $ARGV[0];
+	if ($t =~ m/^-\d+$/) {
+		$t =~ s/^-//;
+		$pause=$t;
+		shift;
+	}
+}
+
+#print $pause,"\n";
+system("/bin/echo",@@ARGV);
+exec("sleep",($pause));
+
+@

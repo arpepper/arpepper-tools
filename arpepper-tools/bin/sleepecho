@@ -1,0 +1,24 @@
+#!/usr/bin/perl -w
+
+# Shouldn't need perl for this, but it is more regular
+#
+# sleepecho [-number] arguments to echo
+#
+# You would think one of sleep or echo would have grown this functionality
+# Or failing that, someone would have published a third standard command.
+# (It can be useful where sending statement separators is difficult).
+
+$pause=3;
+if (defined($ARGV[0]) ) {
+	$t = $ARGV[0];
+	if ($t =~ m/^-\d+$/) {
+		$t =~ s/^-//;
+		$pause=$t;
+		shift;
+	}
+}
+
+#print $pause,"\n";
+system("/bin/echo",@ARGV);
+exec("sleep",($pause));
+
