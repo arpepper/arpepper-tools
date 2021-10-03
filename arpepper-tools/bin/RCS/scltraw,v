@@ -1,0 +1,256 @@
+head	1.9;
+access;
+symbols;
+locks
+	arpepper:1.9; strict;
+comment	@# @;
+
+
+1.9
+date	2021.09.09.09.07.19;	author arpepper;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2021.09.09.08.42.23;	author arpepper;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2021.01.16.22.59.26;	author arpepper;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2020.12.16.22.37.35;	author arpepper;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2020.11.17.20.59.42;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2020.11.11.21.33.25;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2020.11.11.10.46.53;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2020.11.10.23.41.50;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2020.11.10.23.40.27;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@We think we need a primitive for other commands to call.
+This will do no matching, etc; that will be done by commands calling this.
+@
+
+
+1.9
+log
+@Actually I was wrong.
+Changes to scr were necessary.
+And even further changes were advisable.
+@
+text
+@#!/usr/bin/perl -w
+
+# set PATH
+
+#print "HOME $ENV{HOME}\n";
+
+open(S,"screen -list|") || die "screen -list failed";
+while (<S>) {
+# ^I43497.pts-4.ubuntu1804-102^I(11/11/2020 05:05:26 AM)^I(Attached)
+# debian gave us...  (no 20 on 2020)
+# ^I1947.pts-27.caffeine^I(16/12/20 05:00:00 PM)^I(Attached)
+	if ( $_ =~ /^\t/ ) {
+		# print;
+		$pid = $_;
+		$pid =~ /^\s*(\d+)/;
+		$pid = $1;
+		$date = $_;
+		$date =~ /\t[(]([^)]*)[)]\t/;
+		# Actually the following is probably locale dependent
+		$date =~ s:/(\d\d) :/20&1 : ;  # Wouldn't work pre-2000
+		open(D,"date --date=\"$1\" +%b%d 2>&1|") || die "date $1";
+		$date = <D>;
+		$date =~ s/\n.*//mg;
+		close(D);
+		$att = $_;
+		$att =~ /\t[(](.)[^)]*[)]$/;
+		$att = $1;
+		#print "$pid\n";
+		$shifter = "";
+		open(P,"pstree -slp $pid|") || die "pstree $pid failed";
+		while (<P>) {
+# systemd(1)---screen(29038)-+-csh(29039)
+#                            |-csh(29290)---ssh(30965)
+#                            |-csh(29299)
+#                            |-csh(29306)---vi(30346)
+#                            |-csh(31205)---vi(31382)
+#                            `-csh(32847)
+			$pstree = $_;
+			#print $pstree;
+			# Collapse all "---" to "--"
+			$pstree =~ s/[)]---/)--/g;
+			# Determine an ssh host
+			$hoststring = "";
+			if ($pstree =~ /ssh\((\d+)\)$/ ) {
+				my $pid = $1;
+				$psl = `ps -hfwwp $pid`;
+				#print $psl;
+				$psl =~ /(\S*)$/;
+				$hoststring = $1;
+				$hoststring =~ s/[.]uwaterloo[.]ca$//;
+				$hoststring = "  $hoststring";
+			}
+			$line = $pstree;
+			# Remove first element, probably systemd
+			$line =~ s/^[^(]*[(]1[)]-+//;
+# Trim extraneous from beginning of...
+# sshd(2653)--sshd(23502)--sshd(23506)--csh(23507)--screen(23516)
+			while ( $line =~ m/^sshd\([^a]*sshd\(/ ) {
+				# could this loop indefinitely?
+				$line =~ s/^sshd\([^a]*sshd/sshd/;
+			}
+# New! change initial screen( to simply (
+			$line =~ s/^screen\(/\(/;
+# Problem: for lines beginning with spaces, need to remove some spaces
+			$line =~ s/$/$hoststring/;
+			$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+			#print "$tagfile\n";
+			if ( -f "$tagfile" ) {
+				$cmd = "cat $tagfile";
+				$tag = `$cmd`;
+				$tag =~ s/\n//g;
+				if ( "x$tag" ne "x" ) {
+					$line =~ s/$/ [$tag]/
+				}
+			}
+# Determine and record position of first "+"
+# Or, replace initial spaces [|`] with that many spaces
+			$line =~ s/^ *//;
+#print "shifter=|$shifter|\n";
+			print "${date}:${att} ${shifter}",$line;
+			if ($line =~ /[+]/) {
+				$shifter = $line;
+				$shifter =~ s/[+].*$//;
+				$shifter =~ s/./ /g;
+				#$shifter =~ s/.$//;
+				$shifter =~ s/\n//;
+			}
+		}
+	}
+}
+close(S);
+
+exit 0;
+@
+
+
+1.8
+log
+@New! change initial screen( to simply (
+ 
+It turns out this will be simply handled by "scr" since it removes
+screen.  Wait.  Maybe we now need to make sure we remove initial (.
+@
+text
+@@
+
+
+1.7
+log
+@Handle screens with children.
+@
+text
+@d62 2
+@
+
+
+1.6
+log
+@Crude fix for observed DD/MM/YY on csclub debian 9.13.
+@
+text
+@d29 1
+d32 6
+d40 1
+d42 1
+d54 1
+d62 1
+d74 12
+a85 1
+			print "${date}:${att} ",$line;
+@
+
+
+1.5
+log
+@Trim extraneous "sshd" from start of each line.
+I think I won't miss them...
+@
+text
+@d10 2
+d19 3
+a21 1
+		open(D,"date --date=\"$1\" +%b%d|") || die "date $1";
+d23 1
+a23 1
+		$date =~ s/\n//;
+@
+
+
+1.4
+log
+@exit 0
+@
+text
+@d42 6
+@
+
+
+1.3
+log
+@Add date:status prefix, and s/---/--/g
+@
+text
+@d58 2
+@
+
+
+1.2
+log
+@Problem: scltraw shows up in the pstree for the current screen.
+It and everything below, plus the resultant "branch" on the
+next line, should be removed/ignored.
+@
+text
+@d9 1
+d15 9
+d29 1
+d53 1
+a53 1
+			print $line;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@@

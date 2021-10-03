@@ -1,0 +1,230 @@
+head	1.5;
+access;
+symbols;
+locks
+	arpepper:1.5; strict;
+comment	@# @;
+
+
+1.5
+date	2020.12.14.02.33.45;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2020.12.12.20.20.09;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2020.10.19.09.44.17;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2020.10.15.17.14.52;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2020.10.15.17.07.30;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Set the new "tag" facility for a matching screen.
+ 
+Perhaps could be folded into "sclt" itself.
+Though it's not nice to have a single command which
+sometimes, but not always, changes state.  (specifically the "tags")
+@
+
+
+1.5
+log
+@Comments.  Theoretical correctness.
+@
+text
+@#!/usr/bin/perl -w
+
+#
+# scltag - update the "tag" for a matching "screen tree"
+#
+# If given no "screen tree" to match, it is pretty much just "sclt".
+# If given no "tag" it is useful for checking uniqueness of "matches"
+#
+
+# set PATH
+
+$match = $ARGV[0];
+$match = "^" if (!defined($match));
+$match = "^" if ($match eq "");
+$tag = $ARGV[1];
+$tag = "" if (!defined($tag));
+
+#print "$match $tag\n";
+
+# since we use no args, following should be fine ("theoretically correct") ...
+open (S,"scltgrep|") || die "scltgrep failed";
+$found = "";
+$dup = "";
+while (<S>) {
+	$_ =~ s/\n//;
+	if ( $_ =~ m/${match}/ ) {
+		if ($found eq "") {
+			$found = $_;
+		}
+		else {
+			if ( $dup eq "" ) {
+				print "$found\n";
+				$dup = $_;
+			}
+			print "$_\n";
+		}
+	}
+}
+close(S);
+
+if ( $dup ne "" ) {
+	die "Duplicate matches" if ($match ne "^");
+	exit 0;
+}
+
+if ($tag eq "") {
+	if ( $found ne "" ) {
+		print "$found\n";
+	}
+	exit 0;
+}
+
+# print "Should set tag for $match to $tag\n";
+
+$pid = $found;
+# sshd(3136)---sshd(15109)---sshd(15114)---csh(15115)---screen(15124)---screen(15127)---csh(15128)
+# Or...
+# screen(15127)---csh(15128)
+#
+$pid =~ s/.*(screen[(][0-9]*[)]).*$/$1/;
+$pid =~ s/^screen[(]//;
+$pid =~ s/[)].*$//;
+
+if ( "$pid" eq "" ) {
+	die "No match for $match";
+}
+
+$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+open(S,">$tagfile") || die "cannot open $tagfile";
+printf S "%s\n", $tag;
+close(S);
+
+#print "$pid $tag\n";
+
+#
+
+#print "HOME $ENV{HOME}\n";
+
+# But...
+# screen(5195)---csh(5201)---scr(5214)---screen(5215)
+# "screen -r 5195" works
+# but "screen -r 5215" does not
+# |-screen(5195)---csh(5201)---scr(5214)---screen(5215)
+# (ran screen ("screen -d -r ") within screen)
+# Seems to be an ssh session to ubuntu1804-2000 under second screen?
+#   (Which session is difficult to find)
+#   (because its ppid is 1?)
+# Matches screen(65736)---csh(65737)---ssh(65750)  ?
+#
+# A fresh "scr 657" changed 5195 to...
+# screen(5195)---csh(5201)
+# And seems to fix "the problem"
+# So, in my case...
+# screen(NNNNN).*scr(NNNNN).*screen(NNNNN)
+# will indicate problems
+
+
+exit 0;
+
+# Old version of sclt for now (for reference)...
+
+open(S,"screen -list|") || die "screen -list failed";
+while (<S>) {
+	if ( $_ =~ /^\t/ ) {
+		# print;
+		$pid = $_;
+		$pid =~ /^\s*(\d+)/;
+		$pid = $1;
+		#print "$pid\n";
+		open(P,"pstree -slp $pid|") || die "pstree $pid failed";
+		while (<P>) {
+			$pstree = $_;
+			#print $pstree;
+			$hoststring = "";
+			if ($pstree =~ /ssh\((\d+)\)$/ ) {
+				my $pid = $1;
+				$psl = `ps -hfwwp $pid`;
+				#print $psl;
+				$psl =~ /(\S*)$/;
+				$hoststring = $1;
+				$hoststring =~ s/[.]uwaterloo[.]ca$//;
+				$hoststring = "  $hoststring";
+			}
+			$line = $pstree;
+			$line =~ s/^[^(]*[(]1[)]-+//;
+			$line =~ s/$/$hoststring/;
+			$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+			#print "$tagfile\n";
+			if ( -f "$tagfile" ) {
+				$cmd = "cat $tagfile";
+				$tag = `$cmd`;
+				$tag =~ s/\n//g;
+				if ( "x$tag" ne "x" ) {
+					$line =~ s/$/ [$tag]/
+				}
+			}
+			print $line;
+		}
+	}
+}
+close(S);
+@
+
+
+1.4
+log
+@Should be alright to change sclt to the scltgrep which sclt will
+call anyway.
+@
+text
+@d20 1
+@
+
+
+1.3
+log
+@Oops.  Add overlooked check for non-matching match.
+Could also do before trying to find pid...
+@
+text
+@d20 1
+a20 1
+open (S,"sclt|") || die "sclt failed";
+@
+
+
+1.2
+log
+@Add a mini-manpage
+@
+text
+@d63 4
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 7
+@

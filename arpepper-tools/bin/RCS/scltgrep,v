@@ -1,0 +1,205 @@
+head	1.6;
+access;
+symbols;
+locks
+	arpepper:1.6; strict;
+comment	@# @;
+
+
+1.6
+date	2021.10.03.12.09.33;	author arpepper;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2021.01.16.23.16.52;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2020.12.14.02.33.13;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2020.11.11.22.19.45;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2020.11.11.21.36.43;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2020.11.11.11.19.29;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Started with scltag, and removed tag setting.
+We do not need the complexity of determining single or multiple matches.
+That can be done in scltag if it calls us.
+@
+
+
+1.6
+log
+@Handle new-style output where initial screen(NNNNN) becomes (NNNNN)
+@
+text
+@#!/usr/bin/perl -w
+
+#
+# scltgrep - show the matching "screen trees"
+#
+# If given no "screen tree" to match, it is pretty much just "sclt".
+#
+
+# set PATH
+
+# So should we do anything with other args?
+$match = $ARGV[0];
+$match = "^" if (!defined($match));
+$match = "^" if ($match eq "");
+
+#print "$match\n";
+
+$ourpid = "$$";
+#print "ourpid $ourpid\n";
+$junkline = 0;
+$prefix = "";
+
+# scltraw never takes any arguments
+#  so our only worry is if arguments to us have been "over-processed"
+open (S,"scltraw|") || die "scltraw failed";
+while (<S>) {
+	$_ =~ s/\n//;
+	if ( $_ =~ m/\($ourpid\)/ ) {
+		if ( $_ =~ m/\[/ ) {
+			$_ =~ s/\($ourpid\).*\[/($ourpid)  [/;
+		}
+		else {
+			$_ =~ s/\($ourpid\).*$/($ourpid)\$/;
+		}
+		$junkline = 1;
+	}
+	if ( $junkline && $_ =~ /^.....:[A-Z]\s{10}/ ) {
+		# Our own screen often gets multiple lines
+		$junkline = 0;
+		next;
+	}
+	if ( $_ =~ /screen/ || $_ =~ / \(/ ) {
+		$prefix = "";
+	}
+	if ( $_ =~ m/${match}/ ) {
+		print $prefix;
+		print "$_\n";
+	}
+	elsif ( $_ =~ /screen/ ) {
+		$prefix = "$_\n";
+	}
+	else {
+		$prefix .= "$_\n";
+	}
+}
+close(S);
+
+exit 0;
+
+@
+
+
+1.5
+log
+@If the match is in a non-screen line, print a "prefix" of the previous
+lines.  Sort of.   Happens to work well for "^".
+Tricky part is when match line does not match "screen".
+ 
+Does not cause trouble for, e.g. "scr".
+Eventually we want "scr" to work for a match in a child line.
+@
+text
+@d42 1
+a42 1
+	if ( $_ =~ /screen/ ) {
+@
+
+
+1.4
+log
+@Comments.  About arguments.
+@
+text
+@d21 1
+d42 3
+d46 1
+d48 6
+@
+
+
+1.3
+log
+@Possibly kludgey removal of observed artifacts.
+@
+text
+@d11 1
+d22 2
+@
+
+
+1.2
+log
+@Remove the complexity and make it what it should be.
+@
+text
+@d4 1
+a4 1
+# scltgrep - show the matching "screen tree"
+d17 4
+d24 14
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@a17 2
+$found = "";
+$dup = "";
+d21 1
+a21 10
+		if ($found eq "") {
+			$found = $_;
+		}
+		else {
+			if ( $dup eq "" ) {
+				print "$found\n";
+				$dup = $_;
+			}
+			print "$_\n";
+		}
+d26 1
+a26 18
+# Want to do following for scltag
+# if ( $dup ne "" ) {
+#	die "Duplicate matches" if ($match ne "^");
+#	exit 0;
+#}
+if ( $dup ne "" ) {
+	exit 0;
+}
+
+#if ($tag eq "") {
+#	if ( $found ne "" ) {
+#		print "$found\n";
+#	}
+#	exit 0;
+#}
+if ( $found ne "" ) {
+	print "$found\n";
+}
+@

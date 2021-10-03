@@ -1,0 +1,38 @@
+head	1.1;
+access;
+symbols;
+locks
+	arpepper:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2020.04.01.12.28.57;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Under development.
+ 
+Ultimately want to get screen process id from a pattern.
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/csh
+
+set pat="$1"
+if ( "x" == "x$pat" ) then
+	set pat="."
+endif
+
+#echo "$pat"
+
+ps -flu arpepper | grep "$pat"
+
+@

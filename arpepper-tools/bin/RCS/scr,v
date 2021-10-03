@@ -1,0 +1,129 @@
+head	1.4;
+access;
+symbols;
+locks
+	arpepper:1.4; strict;
+comment	@# @;
+
+
+1.4
+date	2021.09.09.09.03.39;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2021.09.09.08.53.42;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2020.11.25.21.37.36;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2016.03.03.14.32.59;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Recover a screen using standard matching.
+But specify the option to force detach.
+ 
+Checked in Tue Mar 31 14:08:58 EDT 2020
+Initial revision was already not using /bin/showpath
+@
+
+
+1.4
+log
+@Make the previous fix somewhat more correct and quite a bit more complicated.
+@
+text
+@#!/usr/bin/perl -w
+
+#setenv PATH `/bin/showpath /u/arpepper/bin/ current`
+
+$arg=$ARGV[0];
+
+
+if (!defined($arg)) {
+	die "I paid for an argument";
+}
+
+$screenarg=$arg;
+$search="";
+open(S,"scltgrep \"$arg\"|");   # Should figure out how to open exec list
+while (<S>) {
+	# We could slurp...
+	$search .= $_;
+}
+close(S);
+
+print "$search";
+
+# if multiple lines, complain and exit
+# if only one line, extract PID for screen
+
+if ( $search =~ /\n.*\n/m ) {
+	die "Multiple matches found.\n";
+}
+
+if ($search =~ /\n/m) {
+	$s=$search;
+	if ($s =~  m/^[^ ]*:[A-Z] \(/ ) {
+		# 2021/Sep/09 - handle new-style "screen"-less lines
+		$s =~ s/^[^ ]*:[A-Z] \(//;
+	}
+	else {
+		# Try to avoid being fooled by tag containing "screen("
+		$s =~ s/^[^\[]*screen\(//;
+	}
+	$s =~ s/\).*//;
+	$screenarg = $s;
+}
+#print $search;
+print $screenarg;
+
+exec("screen -dr $screenarg");
+@
+
+
+1.3
+log
+@Handle new output which removes "screen" from first element.
+It was harder than I thought, since line does have a prefix.
+Matching .*screen\(  is actually sort of iffy.
+@
+text
+@d32 8
+a39 2
+	$s =~ s/^.*screen\(//;
+	$s =~ s/^[^ ]*:[A-Z] \(//;   # 2021/Sep/09 - handle new-style "screen"-less lines
+@
+
+
+1.2
+log
+@Major revision.
+Changed from sh to perl.
+Match against our standard "sclt" output, using scltgrep.
+@
+text
+@d33 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+#!/bin/csh -f
+d5 35
+a39 1
+screen -dr $1
+@

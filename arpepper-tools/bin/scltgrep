@@ -1,0 +1,59 @@
+#!/usr/bin/perl -w
+
+#
+# scltgrep - show the matching "screen trees"
+#
+# If given no "screen tree" to match, it is pretty much just "sclt".
+#
+
+# set PATH
+
+# So should we do anything with other args?
+$match = $ARGV[0];
+$match = "^" if (!defined($match));
+$match = "^" if ($match eq "");
+
+#print "$match\n";
+
+$ourpid = "$$";
+#print "ourpid $ourpid\n";
+$junkline = 0;
+$prefix = "";
+
+# scltraw never takes any arguments
+#  so our only worry is if arguments to us have been "over-processed"
+open (S,"scltraw|") || die "scltraw failed";
+while (<S>) {
+	$_ =~ s/\n//;
+	if ( $_ =~ m/\($ourpid\)/ ) {
+		if ( $_ =~ m/\[/ ) {
+			$_ =~ s/\($ourpid\).*\[/($ourpid)  [/;
+		}
+		else {
+			$_ =~ s/\($ourpid\).*$/($ourpid)\$/;
+		}
+		$junkline = 1;
+	}
+	if ( $junkline && $_ =~ /^.....:[A-Z]\s{10}/ ) {
+		# Our own screen often gets multiple lines
+		$junkline = 0;
+		next;
+	}
+	if ( $_ =~ /screen/ || $_ =~ / \(/ ) {
+		$prefix = "";
+	}
+	if ( $_ =~ m/${match}/ ) {
+		print $prefix;
+		print "$_\n";
+	}
+	elsif ( $_ =~ /screen/ ) {
+		$prefix = "$_\n";
+	}
+	else {
+		$prefix .= "$_\n";
+	}
+}
+close(S);
+
+exit 0;
+

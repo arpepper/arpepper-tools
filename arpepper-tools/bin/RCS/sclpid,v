@@ -1,0 +1,208 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2020.11.11.23.02.24;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2020.10.30.14.27.20;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Started with a version of scltag
+@
+
+
+1.2
+log
+@Many comments.
+We still haven't actually used it.
+@
+text
+@#!/usr/bin/perl -w
+
+#
+# sclpid - return PID guaranteed to uniquely identify matched screen session
+#
+# In development:
+#   Probably sclpid <pattern>
+#      returns PID for matched <pattern> in sclt/scltag output
+#      sclpid processes first line of standard input
+#           - should it perhaps be each line, with multiple outputs?
+#
+# A matched scltag line can look like...
+# screen(35029)---csh(35030)---scltag(33176)---sclt(33177)-+-pstree(33179)
+# if the screen has been detached (and possibly re-attached)
+# Or...
+# sshd(2653)---sshd(15366)---sshd(15370)---csh(15371)---screen(15380)---screen(15383)---csh(15384)
+# if the screen session is original
+#
+# Which suggests perhaps that the other tools should trim the tree
+#
+# In fact, perhaps we should not use the "-s" option of pstreer?
+# That is useful for detecting screens within screens?
+# Also indicates which ones are "fresh".
+#
+# Actually we use "-s", but remove the first element without checking
+# what it is.
+#
+# We want sclpid to "grep" what scltag shows, for consistency.
+#
+
+#
+# scltag - update the "tag" for a matching "screen tree"
+#
+# If given no "screen tree" to match, it is pretty much just "sclt".
+# If given no "tag" it is useful for checking uniqueness of "matches"
+#
+
+# set PATH
+
+$match = $ARGV[0];
+$match = "^" if (!defined($match));
+$match = "^" if ($match eq "");
+$tag = $ARGV[1];
+$tag = "" if (!defined($tag));
+
+#print "$match $tag\n";
+
+open (S,"sclt|") || die "sclt failed";
+$found = "";
+$dup = "";
+while (<S>) {
+	$_ =~ s/\n//;
+	if ( $_ =~ m/${match}/ ) {
+		if ($found eq "") {
+			$found = $_;
+		}
+		else {
+			if ( $dup eq "" ) {
+				print "$found\n";
+				$dup = $_;
+			}
+			print "$_\n";
+		}
+	}
+}
+close(S);
+
+if ( $dup ne "" ) {
+	die "Duplicate matches" if ($match ne "^");
+	exit 0;
+}
+
+if ($tag eq "") {
+	if ( $found ne "" ) {
+		print "$found\n";
+	}
+	exit 0;
+}
+
+# print "Should set tag for $match to $tag\n";
+
+$pid = $found;
+# sshd(3136)---sshd(15109)---sshd(15114)---csh(15115)---screen(15124)---screen(15127)---csh(15128)
+# Or...
+# screen(15127)---csh(15128)
+#
+$pid =~ s/.*(screen[(][0-9]*[)]).*$/$1/;
+$pid =~ s/^screen[(]//;
+$pid =~ s/[)].*$//;
+
+if ( "$pid" eq "" ) {
+	die "No match for $match";
+}
+
+$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+open(S,">$tagfile") || die "cannot open $tagfile";
+printf S "%s\n", $tag;
+close(S);
+
+#print "$pid $tag\n";
+
+#
+
+#print "HOME $ENV{HOME}\n";
+
+# But...
+# screen(5195)---csh(5201)---scr(5214)---screen(5215)
+# "screen -r 5195" works
+# but "screen -r 5215" does not
+# |-screen(5195)---csh(5201)---scr(5214)---screen(5215)
+# (ran screen ("screen -d -r ") within screen)
+# Seems to be an ssh session to ubuntu1804-2000 under second screen?
+#   (Which session is difficult to find)
+#   (because its ppid is 1?)
+# Matches screen(65736)---csh(65737)---ssh(65750)  ?
+#
+# A fresh "scr 657" changed 5195 to...
+# screen(5195)---csh(5201)
+# And seems to fix "the problem"
+# So, in my case...
+# screen(NNNNN).*scr(NNNNN).*screen(NNNNN)
+# will indicate problems
+
+
+exit 0;
+
+# Old version of sclt for now (for reference)...
+
+open(S,"screen -list|") || die "screen -list failed";
+while (<S>) {
+	if ( $_ =~ /^\t/ ) {
+		# print;
+		$pid = $_;
+		$pid =~ /^\s*(\d+)/;
+		$pid = $1;
+		#print "$pid\n";
+		open(P,"pstree -slp $pid|") || die "pstree $pid failed";
+		while (<P>) {
+			$pstree = $_;
+			#print $pstree;
+			$hoststring = "";
+			if ($pstree =~ /ssh\((\d+)\)$/ ) {
+				my $pid = $1;
+				$psl = `ps -hfwwp $pid`;
+				#print $psl;
+				$psl =~ /(\S*)$/;
+				$hoststring = $1;
+				$hoststring =~ s/[.]uwaterloo[.]ca$//;
+				$hoststring = "  $hoststring";
+			}
+			$line = $pstree;
+			$line =~ s/^[^(]*[(]1[)]-+//;
+			$line =~ s/$/$hoststring/;
+			$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+			#print "$tagfile\n";
+			if ( -f "$tagfile" ) {
+				$cmd = "cat $tagfile";
+				$tag = `$cmd`;
+				$tag =~ s/\n//g;
+				if ( "x$tag" ne "x" ) {
+					$line =~ s/$/ [$tag]/
+				}
+			}
+			print $line;
+		}
+	}
+}
+close(S);
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d4 28
+@

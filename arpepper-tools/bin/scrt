@@ -1,0 +1,25 @@
+#!/bin/csh
+
+set pat="$1"
+if ( "x" == "x$pat" ) then
+	set psline=$<
+	while ( "x" != "x$psline" )
+		#echo "$psline"
+# 0 S arpepper 35233 35222  0  80   0 - 10056 poll_s Mar25 pts/14   00:00:00 ssh -x cs-xh-admin.cs.private.uwaterloo.ca
+		set pid="$psline"
+		set pid=`echo $pid | sed 's/^ *[^ ][^ ]* *[^ ][^ ]* *[^ ][^ ]* *//'`
+		set pid=`echo $pid | sed 's/  *.*$//'`
+		set pstree=`pstree -sp "$pid" `
+		#echo "$pid"
+		echo "$pstree $psline"
+		set psline=$<
+	end
+endif
+
+#echo "$pat"
+
+foreach p ( $*:q )
+	#echo "$p"
+	pstree -sp "$p"
+end
+

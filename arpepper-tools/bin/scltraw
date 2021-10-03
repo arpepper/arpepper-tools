@@ -1,0 +1,93 @@
+#!/usr/bin/perl -w
+
+# set PATH
+
+#print "HOME $ENV{HOME}\n";
+
+open(S,"screen -list|") || die "screen -list failed";
+while (<S>) {
+# ^I43497.pts-4.ubuntu1804-102^I(11/11/2020 05:05:26 AM)^I(Attached)
+# debian gave us...  (no 20 on 2020)
+# ^I1947.pts-27.caffeine^I(16/12/20 05:00:00 PM)^I(Attached)
+	if ( $_ =~ /^\t/ ) {
+		# print;
+		$pid = $_;
+		$pid =~ /^\s*(\d+)/;
+		$pid = $1;
+		$date = $_;
+		$date =~ /\t[(]([^)]*)[)]\t/;
+		# Actually the following is probably locale dependent
+		$date =~ s:/(\d\d) :/20&1 : ;  # Wouldn't work pre-2000
+		open(D,"date --date=\"$1\" +%b%d 2>&1|") || die "date $1";
+		$date = <D>;
+		$date =~ s/\n.*//mg;
+		close(D);
+		$att = $_;
+		$att =~ /\t[(](.)[^)]*[)]$/;
+		$att = $1;
+		#print "$pid\n";
+		$shifter = "";
+		open(P,"pstree -slp $pid|") || die "pstree $pid failed";
+		while (<P>) {
+# systemd(1)---screen(29038)-+-csh(29039)
+#                            |-csh(29290)---ssh(30965)
+#                            |-csh(29299)
+#                            |-csh(29306)---vi(30346)
+#                            |-csh(31205)---vi(31382)
+#                            `-csh(32847)
+			$pstree = $_;
+			#print $pstree;
+			# Collapse all "---" to "--"
+			$pstree =~ s/[)]---/)--/g;
+			# Determine an ssh host
+			$hoststring = "";
+			if ($pstree =~ /ssh\((\d+)\)$/ ) {
+				my $pid = $1;
+				$psl = `ps -hfwwp $pid`;
+				#print $psl;
+				$psl =~ /(\S*)$/;
+				$hoststring = $1;
+				$hoststring =~ s/[.]uwaterloo[.]ca$//;
+				$hoststring = "  $hoststring";
+			}
+			$line = $pstree;
+			# Remove first element, probably systemd
+			$line =~ s/^[^(]*[(]1[)]-+//;
+# Trim extraneous from beginning of...
+# sshd(2653)--sshd(23502)--sshd(23506)--csh(23507)--screen(23516)
+			while ( $line =~ m/^sshd\([^a]*sshd\(/ ) {
+				# could this loop indefinitely?
+				$line =~ s/^sshd\([^a]*sshd/sshd/;
+			}
+# New! change initial screen( to simply (
+			$line =~ s/^screen\(/\(/;
+# Problem: for lines beginning with spaces, need to remove some spaces
+			$line =~ s/$/$hoststring/;
+			$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+			#print "$tagfile\n";
+			if ( -f "$tagfile" ) {
+				$cmd = "cat $tagfile";
+				$tag = `$cmd`;
+				$tag =~ s/\n//g;
+				if ( "x$tag" ne "x" ) {
+					$line =~ s/$/ [$tag]/
+				}
+			}
+# Determine and record position of first "+"
+# Or, replace initial spaces [|`] with that many spaces
+			$line =~ s/^ *//;
+#print "shifter=|$shifter|\n";
+			print "${date}:${att} ${shifter}",$line;
+			if ($line =~ /[+]/) {
+				$shifter = $line;
+				$shifter =~ s/[+].*$//;
+				$shifter =~ s/./ /g;
+				#$shifter =~ s/.$//;
+				$shifter =~ s/\n//;
+			}
+		}
+	}
+}
+close(S);
+
+exit 0;

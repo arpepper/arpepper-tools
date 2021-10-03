@@ -1,5 +1,46 @@
-#!/bin/csh -f
+#!/usr/bin/perl -w
 
 #setenv PATH `/bin/showpath /u/arpepper/bin/ current`
 
-screen -dr $1
+$arg=$ARGV[0];
+
+
+if (!defined($arg)) {
+	die "I paid for an argument";
+}
+
+$screenarg=$arg;
+$search="";
+open(S,"scltgrep \"$arg\"|");   # Should figure out how to open exec list
+while (<S>) {
+	# We could slurp...
+	$search .= $_;
+}
+close(S);
+
+print "$search";
+
+# if multiple lines, complain and exit
+# if only one line, extract PID for screen
+
+if ( $search =~ /\n.*\n/m ) {
+	die "Multiple matches found.\n";
+}
+
+if ($search =~ /\n/m) {
+	$s=$search;
+	if ($s =~  m/^[^ ]*:[A-Z] \(/ ) {
+		# 2021/Sep/09 - handle new-style "screen"-less lines
+		$s =~ s/^[^ ]*:[A-Z] \(//;
+	}
+	else {
+		# Try to avoid being fooled by tag containing "screen("
+		$s =~ s/^[^\[]*screen\(//;
+	}
+	$s =~ s/\).*//;
+	$screenarg = $s;
+}
+#print $search;
+print $screenarg;
+
+exec("screen -dr $screenarg");

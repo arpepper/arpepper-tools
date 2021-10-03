@@ -1,0 +1,11 @@
+#!/bin/csh
+
+set pat="$1"
+if ( "x" == "x$pat" ) then
+	set pat="."
+endif
+
+#echo "$pat"
+
+ps -flu arpepper | grep "$pat"
+

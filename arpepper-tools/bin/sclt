@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+
+# set PATH
+
+#print "HOME $ENV{HOME}\n";
+
+$args="";
+if ( $#ARGV >= 0 ) {
+
+	#print "args @ARGV\n";
+	$args=" @ARGV";
+}
+
+# Passing arg down raises quoting and possible injection problems?
+# Really we want to do a fork and exec so that we do not have
+# a shell interpret our arguments again.
+open(S,"scltgrep${args}|") || die "scltgrep failed";
+while (<S>) {
+	print;
+}
+close(S);
+
+exit 0;

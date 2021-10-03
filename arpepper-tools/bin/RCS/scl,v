@@ -1,0 +1,33 @@
+head	1.1;
+access;
+symbols;
+locks
+	arpepper:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2016.03.03.14.31.09;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@List available screens.
+
+Checked in Tue Mar 31 14:08:58 EDT 2020
+Initial revision was already not using /bin/showpath
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/csh -f
+
+#setenv PATH `/bin/showpath /u/arpepper/bin/ current`
+
+screen -list
+@

@@ -1,0 +1,134 @@
+head	1.4;
+access;
+symbols;
+locks
+	arpepper:1.4; strict;
+comment	@# @;
+
+
+1.4
+date	2020.12.14.02.34.30;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2020.11.11.22.59.10;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2020.10.16.17.05.06;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2020.10.15.11.12.15;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@SCreen List process Tree   sort of.
+@
+
+
+1.4
+log
+@Comment on the fact open causes string execution of our args.
+@
+text
+@#!/usr/bin/perl -w
+
+# set PATH
+
+#print "HOME $ENV{HOME}\n";
+
+$args="";
+if ( $#ARGV >= 0 ) {
+
+	#print "args @@ARGV\n";
+	$args=" @@ARGV";
+}
+
+# Passing arg down raises quoting and possible injection problems?
+# Really we want to do a fork and exec so that we do not have
+# a shell interpret our arguments again.
+open(S,"scltgrep${args}|") || die "scltgrep failed";
+while (<S>) {
+	print;
+}
+close(S);
+
+exit 0;
+@
+
+
+1.3
+log
+@Remove most of it.  Most of our work is done by scltraw via
+scltgrep now.
+@
+text
+@d15 2
+@
+
+
+1.2
+log
+@Display ~/.sclt-tags/${pid} if found.
+@
+text
+@d7 9
+a15 1
+open(S,"screen -list|") || die "screen -list failed";
+d17 1
+a17 36
+	if ( $_ =~ /^\t/ ) {
+		# print;
+		$pid = $_;
+		$pid =~ /^\s*(\d+)/;
+		$pid = $1;
+		#print "$pid\n";
+		open(P,"pstree -slp $pid|") || die "pstree $pid failed";
+		while (<P>) {
+			$pstree = $_;
+			#print $pstree;
+			$hoststring = "";
+			if ($pstree =~ /ssh\((\d+)\)$/ ) {
+				my $pid = $1;
+				$psl = `ps -hfwwp $pid`;
+				#print $psl;
+				$psl =~ /(\S*)$/;
+				$hoststring = $1;
+				$hoststring =~ s/[.]uwaterloo[.]ca$//;
+				$hoststring = "  $hoststring";
+			}
+			$line = $pstree;
+			$line =~ s/^[^(]*[(]1[)]-+//;
+			$line =~ s/$/$hoststring/;
+			$tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
+			#print "$tagfile\n";
+			if ( -f "$tagfile" ) {
+				$cmd = "cat $tagfile";
+				$tag = `$cmd`;
+				$tag =~ s/\n//g;
+				if ( "x$tag" ne "x" ) {
+					$line =~ s/$/ [$tag]/
+				}
+			}
+			print $line;
+		}
+	}
+d20 2
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 2
+d26 1
+d32 10
+@
