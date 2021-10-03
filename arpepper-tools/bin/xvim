@@ -86,31 +86,62 @@ declare -a dims=(
         "3x5"
         "3x7"
         "4x8"
-        "4x10"
-        "5x11"
+        "4x9"
+        "5x10"
+        "6x12"
         "6x13"
-        "6x14"
-        "7x15"
-        "8x16"
-        "8x18"
+        "7x14"
+        "8x15"
+        "8x17"
+        "9x18"
         "9x19"
-        "9x20"
-        "10x21"
-        "11x24"
-        "11x25"
-        "12x26"
+        "10x20"
+        "11x22"
+        "11x23"
+        "12x24"
+        "13x25"
         "13x27"
-        "13x29"
-        "14x30"
-        "14x31"
-        "15x32"
-        "16x34"
-        "16x35"
-        "17x37"
-        "18x38"
-        "18x40"
-        "19x40"
+        "14x28"
+        "14x29"
+        "15x30"
+        "16x32"
+        "16x33"
+        "17x34"
+        "18x35"
+        "18x37"
+        "19x37"
+         "19x38"
+         "20x39"
+         "21x41"
+         "21x42"
+         "22x43"
+         "23x44"
+         "23x46"
+         "24x47"
+         "24x48"
+         "25x49"
+         "26x51"
+         "26x52"
+         "27x53"
+         "28x54"
+         "28x56"
+         "29x57"
+         "29x58"
+         "30x59"
+         "31x61"
+         "31x62"
+         "32x63"
+         "33x64"
+         "33x66"
+         "34x67"
+         "35x68"
+         "35x69"
+         "36x70"
+         "36x72"
+         "37x73"
+         "38x74"
 )
+
 
 
 #for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
@@ -145,13 +176,10 @@ for a in $eargs
 do
 	if (( $sizenext > 0 ))
 	then
-# Problem: oversized fs is passed by xterm even though we don't accept it
-		if (( ( 0 < $a ) && ( $a < 31 ) ))
-		then
-			fs=$a
-			#fs=`echo "$fs" | sed 's/^.*x//'`
-			#echo fs=$fs
-		fi
+		# We used to size check font here, but now do it later
+		fs=$a
+		#fs=`echo "$fs" | sed 's/^.*x//'`
+		#echo fs=$fs
 		sizenext=0
 	fi
 	case $a in
@@ -166,6 +194,7 @@ g=""
 # Note: no // around RE
 if [[ "${eargs}" =~ "-g" ]]
 then
+# echo found a dash g
 	# Following would be fooled by e.g. -title our-geometry
 	g=`echo "${eargs}" | sed 's/^.*-g/-g/' | sed 's/^-g[^ ]*  *\([^ ]*\).*/\1/'`
 	eargs=`echo "${eargs}" | sed 's/-g[^ ]* [^ ]*//'`
@@ -228,18 +257,30 @@ esac
 # Note we will specify -geometry which may be overridden later anyway.
 # Let alone that window manager may adjust oversized windows also.
 # 
-cheight=${dims[$fs]}
-#echo cheight=$cheight
-cheight=`echo "$cheight" | sed 's/^.*x//'`
+
 #xrandr on a new system added "primary" after connect; geometry not positional
 #height=`xrandr --current | grep ' connected ' | awk '{print $3}' | sed 's/[^x]*x//' | sed 's/[+].*//' | sort -n | head -1`
-pheight=`xwininfo -root | grep '^ *Height:  *' | sed 's/^.*: //'`
-# 96 should be a parameter; represents normal vertical screen use
-# height=`expr '(' $pheight - 96 ')' / $cheight`
+pheight=`xwininfo -root | grep '^ *Height:  *' | sed 's/^.*: *//'`
+if (( ( 0 < $fs ) && ( $fs < 61 ) ))
+then
+	cheight=${dims[$fs]}
+	#echo cheight=$cheight
+	cheight=`echo "$cheight" | sed 's/^.*x//'`
+else
+	# Force huge fonts to about 4 line windows
+	cheight=`expr "$pheight" / 5 `
+	# The following is a sometimes-wanted warning
+	#echo "Oversize font; default height"
+fi
+#echo pheight=$pheight
+#echo cheight=$cheight
+#sleep 3
+
 vusage=80
+# following is probably a relic of compensating for a different miscalculation
 if (( $fs > 6 ))
 then
-	vusage=48
+	vusage=80
 fi
 height=`expr '(' $pheight - $vusage ')' / $cheight`
 #echo height=$height
@@ -266,10 +307,20 @@ xterm \
     -xrm '*renderFont:on' \
     -xrm '*RenderFont:on' \
     -xrm '*Logfile:/home/arpepper/xterm.log' \
+    -xrm '*fontWarnings:0' \
     -fs $fs \
-    -xrm "*geometry:80x$height" \
+    -geometry 80x$height \
     -sb -sl 15000 "$@"
 
+# For a long time we used...
+#   -xrm "*geometry:80x$height" \
+# (Now --geometry 80x$height )
+#
+# Perhaps
+#   - I did not know about -geometry
+#   - xterm did not, as it does now, tolerate multiple -geometry
+#   - I wanted to use resources to override this geometry in some cases.
+#
 # Problem if we want to manipulate "$@" contents
 #Note:
 #  -bg  xterm*background: or XTerm*background:
