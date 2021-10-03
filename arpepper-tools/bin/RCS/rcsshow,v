@@ -1,0 +1,320 @@
+head	1.9;
+access;
+symbols;
+locks
+	arpepper:1.9; strict;
+comment	@# @;
+
+
+1.9
+date	2021.08.19.15.33.49;	author arpepper;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2021.08.19.15.16.53;	author arpepper;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2021.08.19.15.06.25;	author arpepper;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2021.08.19.14.55.51;	author arpepper;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2021.08.19.14.47.30;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2021.08.14.00.40.41;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2021.08.14.00.34.10;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2021.08.13.22.38.41;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.08.13.20.15.50;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Print interspersed RCS log comments together with the associated diffs.
+@
+
+
+1.9
+log
+@Add hints and bugs.
+@
+text
+@#!/usr/bin/perl -w
+
+sub
+numdotsort {  # 1.4 > 1.3.2.1 > 1.3 > 1.2.2 > 1.1
+# $a and $b are "magically" set for perl sort functions
+	my (@@v1,@@v2);
+	@@v1 = split(/[.]/,$a);
+	@@v2 = split(/[.]/,$b);
+	my($i);
+	for ($i=0; defined($v1[$i]) && defined($v2[$i]); ++$i) {
+		if ($v1[$i] > $v2[$i]) {
+			return 1;
+		}
+		elsif ($v1[$i] < $v2[$i]) {
+			return -1;
+		}
+	}
+	# Know at least one of $v1[$i] $v2[$i] is not defined
+	return 0 if (!defined($v1[$i]) && !defined($v2[$i]));
+	return 1 if (!defined($v2[$i]) );    # 1.3.1 > 1.3
+	return -1 if (!defined($v1[$i]) );   # 1.3 < 1.3.1
+	die "Cannot happen";
+}
+
+sub
+sumrev {
+	my($f,$rev, $all) = @@_;
+	my($doprint);
+
+	$doprint=$all;  # 1 for first shown, 0 afterwards
+	open(R,"rlog -r${rev} $f|") || die "sumrev $f, $rev";
+	while (<R>) {
+		if ($_ =~ /^-------[\-]*-------------$/ ) {
+			$doprint=1;
+			print << "_EOF";
+###############################################################################
+_EOF
+		}
+		print if ($doprint);
+	}
+	close(R);
+}
+
+sub
+showdiff {
+	my($f,$opts,$rev1,$rev2) = @@_;
+	my($doprint,$cmd);
+
+	$doprint=0;
+	$cmd = "rcsdiff -r$rev1 -r$rev2 $opts $f";
+	open(D,"$cmd 2>&1|") || die "Cannot $cmd";
+	while (<D>) {
+# ===================================================================
+# RCS file: RCS/univ-temp,v
+# retrieving revision 1.6
+# retrieving revision 1.7
+# diff -r1.6 -r1.7
+		$doprint = 1 if ($_ =~ /^diff /);
+		print if ($doprint);
+	}
+	close(D);
+}
+	
+
+@@logargs = ();
+@@diffargs = ();
+#
+# Our own (future) options?
+# reverse?
+# longdiff vs recent diff (can effect via revision choice, however)
+# start diff args  --diff --diffargs -d
+# start rlog args  --rlog --rlogargs --log --logargs -r  (-l is bad idea?)
+#           could recognize -r, and use it if it has more characters?
+#  N.B.  --diff and --rlog must be distinguishable from each other's options
+# show no rlog
+# show no diff
+#
+# Hints:
+#   Select revisions:       rcsshow -r1.3 -r1.10:
+#   Change diff format:     rcsshow -U3
+#   Show only log entries:  rcsshow -q
+# BUG:
+#   Log entry is not show for first revision you specify.
+#
+
+while ( defined ($ARGV[0]) && $ARGV[0] =~ /^-/ ) {
+	if ($ARGV[0] =~ /^-r/ ) {
+		push @@logargs, $ARGV[0];
+	}
+	else {
+		push @@diffargs, $ARGV[0];
+	}
+	shift;
+}
+
+
+$loga = join(" ", @@logargs);
+$diffa = join(" ", @@diffargs);
+#print $loga, "\n";
+#print $diffa, "\n";
+
+while ( defined($ARGV[0]) ) {
+	my ($a) = ($ARGV[0]);
+	shift;
+	my (@@revlist,$r);
+	@@revlist = ();
+	open(L,"rlog ${loga} ${a}|") || die "Failure rlog $a";
+	$primed = 0;
+	while (<L>) {
+# ----------------------------
+# revision 1.304
+		if ($primed && ( $_ =~ /^revision (\d[.\d]*\d)$/ ||
+		 	$_ =~ /^revision (\d[.\d]*\d)\t+locked by: / ) )  {
+			$r = $1;
+			push @@revlist, $r;
+		}
+		else {
+			# How reliable is precisely the following?
+			$primed = $_ =~ /^----------------------------$/;
+		}
+	}
+	close(L);
+	@@revlist = sort numdotsort @@revlist;
+#print( (join " ",@@revlist), "\n");
+	my($i);
+	for ($i=0; defined($revlist[$i+1]); ++$i) {
+		my($r1,$r2);
+		$r1 = $revlist[$i];
+		$r2 = $revlist[$i+1];
+		# Problem: -r1.4:  gives "revision 1.5" as first revision
+		sumrev(${a},$r2, ($i==0) );
+		showdiff(${a},$diffa,$r1,$r2);
+	}
+}
+
+@
+
+
+1.8
+log
+@Handle a locked revision; "primed" should prevent most erroneous matches.
+@
+text
+@d78 7
+d130 1
+@
+
+
+1.7
+log
+@Move visual divider into sumrev routine, where it can come after
+the RCS description etc.
+@
+text
+@d105 2
+a106 1
+		if ($primed && $_ =~ /^revision (\d[.\d]*\d)$/ ) {
+@
+
+
+1.6
+log
+@Show the first part of rlog at the start.
+Visual divider ends up in the wrong place, however.
+@
+text
+@d33 6
+a38 1
+		$doprint=1 if ($_ =~ /^-------[\-]*-------------$/ );
+a121 3
+		print << "_EOF";
+###############################################################################
+_EOF
+@
+
+
+1.5
+log
+@Thoughts.
+@
+text
+@d27 1
+a27 1
+	my($f,$rev) = @@_;
+d30 1
+a30 1
+	$doprint=0;
+d120 1
+a120 1
+		sumrev(${a},$r2);
+@
+
+
+1.4
+log
+@Rename sumdiff to showdiff
+ 
+Add a visually apparent divider for now.:wq
+@
+text
+@d62 11
+@
+
+
+1.3
+log
+@Basically works.
+Moved the key output into functions for future modularity, etc.
+ 
+We need to make a more natural "start of revision" indicator, however.
+Also, when non-contiguous revisions are chosen, it is not clear how
+the diffs should be done.
+@
+text
+@d40 1
+a40 1
+sumdiff {
+d106 3
+d110 1
+a110 1
+		sumdiff(${a},$diffa,$r1,$r2);
+@
+
+
+1.2
+log
+@Initial revision was not actually completely working.
+ 
+This revision is argably working, but unrefined.
+@
+text
+@d25 33
+d100 1
+a100 1
+print( (join " ",@@revlist), "\n");
+d103 1
+a103 2
+		my($cmd,$r1,$r2);
+		#$a = join(" ",$diffargs);
+d106 2
+a107 5
+		$cmd = "rcsdiff -r$r1 -r$r2 $diffa $a";
+		open(D,"$cmd|") || die "Cannot $cmd";
+		while (<D>) {
+			print;
+		}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d68 12
+@
