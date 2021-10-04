@@ -56,17 +56,30 @@ $pid = $found;
 # sshd(3136)---sshd(15109)---sshd(15114)---csh(15115)---screen(15124)---screen(15127)---csh(15128)
 # Or...
 # screen(15127)---csh(15128)
+# Or now...
+# (15127)---csh(15128)
+# Actually probably "--" not "---" since it's our processed output already.
 #
-$pid =~ s/.*(screen[(][0-9]*[)]).*$/$1/;
-$pid =~ s/^screen[(]//;
+# Bad things could happen if screen under screen,
+#      but that's a bad situation anyway.
+#
+if ($pid =~ m/screen/ ) {
+	$pid =~ s/.*(screen[(][0-9]*[)]).*$/$1/;
+	$pid =~ s/^screen[(]//;
+}
+else {
+	$pid =~ s/^[^(]*[(]//;
+}
 $pid =~ s/[)].*$//;
+# Note: we do not want warning for "", so following is correct.
+warn "Bad pid '$pid'" if ($pid =~ /\D/);
 
 if ( "$pid" eq "" ) {
 	die "No match for $match";
 }
 
 $tagfile = "$ENV{HOME}/.sclt-tags/${pid}";
-open(S,">$tagfile") || die "cannot open $tagfile";
+open(S,">$tagfile") || die "cannot open $tagfile";  # should we die?
 printf S "%s\n", $tag;
 close(S);
 
