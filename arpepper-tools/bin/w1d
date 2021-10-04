@@ -1,0 +1,7 @@
+#!/bin/csh -f
+
+set odate=`date`
+while (1)
+	echo $odate "   " `date`
+	sleep 59
+end

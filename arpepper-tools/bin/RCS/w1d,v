@@ -1,0 +1,50 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2020.04.12.23.40.55;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2014.04.03.10.49.48;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Prints the date in a loop, to avoid idle detection.
+@
+
+
+1.2
+log
+@Changed to print start date/time as well as current, which generates
+interesting output implying statistics.
+@
+text
+@#!/bin/csh -f
+
+set odate=`date`
+while (1)
+	echo $odate "   " `date`
+	sleep 59
+end
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d2 2
+d5 1
+a5 1
+	date
+@
