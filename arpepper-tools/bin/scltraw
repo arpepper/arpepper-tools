@@ -11,19 +11,26 @@ while (<S>) {
 # ^I1947.pts-27.caffeine^I(16/12/20 05:00:00 PM)^I(Attached)
 	if ( $_ =~ /^\t/ ) {
 		# print;
+		$line = $_;
+		$line =~ s/\n//g;
+#	18942.pts-0.cs-xh-admin	(09/01/21 17:16:53)	(Detached)
+#	80436.pts-14.ubuntu1804-102	(09/14/2021 10:34:36 AM	(Detached)
 		$pid = $_;
 		$pid =~ /^\s*(\d+)/;
 		$pid = $1;
-		$date = $_;
-		$date =~ /\t[(]([^)]*)[)]\t/;
+#	18942.pts-0.cs-xh-admin	(09/01/21 17:16:53)	(Detached)
+#	80436.pts-14.ubuntu1804-102	(09/14/2021 10:34:36 AM	(Detached)
+		$date="today";
+		$line =~ /\t[(]([^()]*)[)]\t/;
+		$date = $1 if defined($1);
 		# Actually the following is probably locale dependent
-		$date =~ s:/(\d\d) :/20&1 : ;  # Wouldn't work pre-2000
-		open(D,"date --date=\"$1\" +%b%d 2>&1|") || die "date $1";
+		$date =~ s:/(\d\d) :/20$1 : ;  # Wouldn't work pre-2000
+		open(D,"date --date=\"$date\" +%b%d 2>&1|") || die "date $1";
 		$date = <D>;
 		$date =~ s/\n.*//mg;
 		close(D);
 		$att = $_;
-		$att =~ /\t[(](.)[^)]*[)]$/;
+		$att =~ /\t[(](.)[^()]*[)]$/;
 		$att = $1;
 		#print "$pid\n";
 		$shifter = "";

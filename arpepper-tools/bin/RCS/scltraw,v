@@ -1,10 +1,15 @@
-head	1.9;
+head	1.10;
 access;
 symbols;
 locks
-	arpepper:1.9; strict;
+	arpepper:1.10; strict;
 comment	@# @;
 
+
+1.10
+date	2021.10.04.20.08.25;	author arpepper;	state Exp;
+branches;
+next	1.9;
 
 1.9
 date	2021.09.09.09.07.19;	author arpepper;	state Exp;
@@ -58,11 +63,9 @@ This will do no matching, etc; that will be done by commands calling this.
 @
 
 
-1.9
+1.10
 log
-@Actually I was wrong.
-Changes to scr were necessary.
-And even further changes were advisable.
+@Fix several bugs/incorrectnesses in the date and "attach state" processing.
 @
 text
 @#!/usr/bin/perl -w
@@ -78,19 +81,26 @@ while (<S>) {
 # ^I1947.pts-27.caffeine^I(16/12/20 05:00:00 PM)^I(Attached)
 	if ( $_ =~ /^\t/ ) {
 		# print;
+		$line = $_;
+		$line =~ s/\n//g;
+#	18942.pts-0.cs-xh-admin	(09/01/21 17:16:53)	(Detached)
+#	80436.pts-14.ubuntu1804-102	(09/14/2021 10:34:36 AM	(Detached)
 		$pid = $_;
 		$pid =~ /^\s*(\d+)/;
 		$pid = $1;
-		$date = $_;
-		$date =~ /\t[(]([^)]*)[)]\t/;
+#	18942.pts-0.cs-xh-admin	(09/01/21 17:16:53)	(Detached)
+#	80436.pts-14.ubuntu1804-102	(09/14/2021 10:34:36 AM	(Detached)
+		$date="today";
+		$line =~ /\t[(]([^()]*)[)]\t/;
+		$date = $1 if defined($1);
 		# Actually the following is probably locale dependent
-		$date =~ s:/(\d\d) :/20&1 : ;  # Wouldn't work pre-2000
-		open(D,"date --date=\"$1\" +%b%d 2>&1|") || die "date $1";
+		$date =~ s:/(\d\d) :/20$1 : ;  # Wouldn't work pre-2000
+		open(D,"date --date=\"$date\" +%b%d 2>&1|") || die "date $1";
 		$date = <D>;
 		$date =~ s/\n.*//mg;
 		close(D);
 		$att = $_;
-		$att =~ /\t[(](.)[^)]*[)]$/;
+		$att =~ /\t[(](.)[^()]*[)]$/;
 		$att = $1;
 		#print "$pid\n";
 		$shifter = "";
@@ -158,6 +168,28 @@ while (<S>) {
 close(S);
 
 exit 0;
+@
+
+
+1.9
+log
+@Actually I was wrong.
+Changes to scr were necessary.
+And even further changes were advisable.
+@
+text
+@d14 4
+d21 5
+a25 2
+		$date = $_;
+		$date =~ /\t[(]([^)]*)[)]\t/;
+d27 2
+a28 2
+		$date =~ s:/(\d\d) :/20&1 : ;  # Wouldn't work pre-2000
+		open(D,"date --date=\"$1\" +%b%d 2>&1|") || die "date $1";
+d33 1
+a33 1
+		$att =~ /\t[(](.)[^)]*[)]$/;
 @
 
 
