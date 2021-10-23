@@ -1,0 +1,123 @@
+head	1.5;
+access;
+symbols;
+locks
+	arpepper:1.5; strict;
+comment	@# @;
+
+
+1.5
+date	2021.10.23.19.37.09;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2014.03.19.14.45.46;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2012.11.02.20.35.41;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2012.10.29.15.55.35;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2012.10.29.15.49.21;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Started with codall; same thing, but intended for directories
+where we know .??* is fraught with deep traps.
+@
+
+
+1.5
+log
+@Remove showpath.
+
+Add comments.
+@
+text
+@#!/bin/sh
+
+# codstar - cod of all non-dot files and directories
+#   (does show checked-out dot files, however)
+#
+# Was for avoiding ".old" type deep-and-wide directory traps
+
+# Requires: find, rlog
+
+if [ "m${1}t" != "mt" ]; then
+	cd ${1} || exit 1
+fi
+test=`find ./* -type d -name RCS -print 2>&1 | grep -v '^find: ' | wc -l`
+if [ $test = 0 ]
+then
+	exit
+fi
+
+for dir in `find ./* -type d -name RCS -print`
+do
+	rcsfiles=`find ./$dir '(' -name '*,v' -o -name '.*,v' ')' -print`
+	if [ "x$rcsfiles" != "x" ] ; then
+		rlog -L -R $rcsfiles | sed -e 's:^[.]/[.]/::' -e 's:RCS/::g' -e 's/,v$//g'
+	fi
+done
+@
+
+
+1.4
+log
+@Try to avoid "./* does not exist".
+@
+text
+@d3 6
+a8 1
+PATH=`/bin/showpath -pw rcs vendor`; export PATH
+@
+
+
+1.3
+log
+@Handle some strange characters in filenames.
+But not spaces.
+Or probably quotes.
+@
+text
+@d8 6
+@
+
+
+1.2
+log
+@s/[.]/*/
+@
+text
+@d2 7
+a8 1
+for dir in `find * -type d -name RCS -print`
+d10 1
+a10 1
+	rcsfiles=`find $dir '(' -name '*,v' -o -name '.*,v' ')' -print`
+d12 1
+a12 1
+		rlog -L -R $rcsfiles | sed -e 's:RCS/::g' -e 's/,v$//g'
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d2 1
+a2 1
+for dir in `find . -type d -name RCS -print`
+@

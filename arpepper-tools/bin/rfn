@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# rfn - RCS file name (actually, give file name corresponding to RCS file)
+
+# a long-time csh macro. mostly to implement "cod"
+
+exec sed -e 's:RCS/::g' -e 's/,v$//g'

@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# codstar - cod of all non-dot files and directories
+#   (does show checked-out dot files, however)
+#
+# Was for avoiding ".old" type deep-and-wide directory traps
+
+# Requires: find, rlog
+
+if [ "m${1}t" != "mt" ]; then
+	cd ${1} || exit 1
+fi
+test=`find ./* -type d -name RCS -print 2>&1 | grep -v '^find: ' | wc -l`
+if [ $test = 0 ]
+then
+	exit
+fi
+
+for dir in `find ./* -type d -name RCS -print`
+do
+	rcsfiles=`find ./$dir '(' -name '*,v' -o -name '.*,v' ')' -print`
+	if [ "x$rcsfiles" != "x" ] ; then
+		rlog -L -R $rcsfiles | sed -e 's:^[.]/[.]/::' -e 's:RCS/::g' -e 's/,v$//g'
+	fi
+done

@@ -1,0 +1,37 @@
+head	1.1;
+access;
+symbols;
+locks
+	arpepper:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2021.10.23.19.48.10;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@cod - show co'd files
+Long-time csh macro, converted to a shell script.
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/bash
+
+# cod - Show Check-Out'D files (RCS checkout) in current directory
+# codall gives similar results, unless there are RCS beneath subdirectories
+# "codall" also has initial "./" which "cod" does not.
+
+# a long-time csh macro, converted to a shell script
+
+rlog -L -R `find RCS '(' -name '*,v' -o -name '.*,v' ')' -print` | 
+	sed -e 's:RCS/::g' -e 's/,v$//g'
+
+@

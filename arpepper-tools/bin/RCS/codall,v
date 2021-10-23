@@ -1,0 +1,51 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	96.09.13.18.20.25;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	96.09.13.18.07.11;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@show everything checked out beneath this dir
+@
+
+
+1.2
+log
+@Finally make it show dot files.
+
+Also, it won't barf on an empty RCS directory.
+@
+text
+@#!/bin/sh
+for dir in `find . -type d -name RCS -print`
+do
+	rcsfiles=`find $dir '(' -name '*,v' -o -name '.*,v' ')' -print`
+	if [ "x$rcsfiles" != "x" ] ; then
+		rlog -L -R $rcsfiles | sed -e 's:RCS/::g' -e 's/,v$//g'
+	fi
+done
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d4 4
+a7 1
+	rlog -L -R $dir/*,v | sed -e 's:RCS/::g' -e 's/,v$//g'
+@

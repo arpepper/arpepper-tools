@@ -1,0 +1,32 @@
+head	1.1;
+access;
+symbols;
+locks
+	arpepper:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2021.10.23.19.37.59;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@rfn - a long-time csh macro. mostly to implement "cod"
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/bash
+
+# rfn - RCS file name (actually, give file name corresponding to RCS file)
+
+# a long-time csh macro. mostly to implement "cod"
+
+exec sed -e 's:RCS/::g' -e 's/,v$//g'
+@
