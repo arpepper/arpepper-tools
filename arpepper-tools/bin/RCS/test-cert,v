@@ -1,0 +1,435 @@
+head	1.3;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2019.08.28.15.08.39;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2019.08.28.15.06.59;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2017.07.19.19.27.03;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Finally decided this should not permanently live under my fake /tmp/arpepper
+directory!
+@
+
+
+1.3
+log
+@Actually remove -pause
+@
+text
+@#!/bin/bash
+
+# Apparent "geneology"
+#
+# /u/arpepper/CSCF.CS/proj-cscf/RT86045-smtp-cert/RCS/test-cert,v
+# /u/arpepper/CSCF.CS/proj-cscf/RT86045-smtp-cert/test-cert
+# /u/arpepper/CSCF.CS/proj-cscf/RT93805-heartbleed/bin/test-cert
+#
+# I.e was maintained on old cscf.cs.uwaterloo.ca and never transferred elsewhere
+#
+# RT86045-smtp-cert contained apparent refinements and differed by
+# only one line from the aged /tmp/arpepper version
+#
+
+# Note: openssl used to have a "-pause" option, but in newer versions
+#  that is just a syntax error.
+
+
+if [[ -x /bin/showpath ]] ; then
+	PATH=`/bin/showpath -pw +wto openssl current` ; export PATH
+fi
+
+rootdir=`/usr/bin/dirname $0`       # may be relative path
+rootdir=`cd $rootdir && pwd`    # ensure absolute path
+zero=$rootdir/`/usr/bin/basename $0`
+
+#echo $zero
+#exit
+
+CAargs="-CApath /etc/ssl/certs"
+if [[ -r /software/sslCerts/config/certs/cacert.pem ]] ; then
+	CAargs="-CAfile /software/sslCerts/config/certs/cacert.pem"
+fi
+
+bufpre=/tmp/arpepper/test-cert-buf
+touch $bufpre >& /dev/null
+
+
+if [ -w $bufpre ] ; then
+	true
+else
+	bufpre=/tmp/test3buf.$$
+fi
+buf=$bufpre
+
+canonical=0 ; colons=""
+if [[ ( $# == 1 ) ]] ; then
+	colons=`echo "$1" | grep '^[^:]*:[A-Z][A-Z0-9]*:[0-9][0-9]*$'`
+	if [[ ( "" == "$colons" ) ]] ; then
+		# allow single colon with protocol or port
+		colons=`echo "$1" | grep '^[^:]*:[^:]*$'`
+	fi
+fi
+if [[ ( "" != "$colons" ) ]] ; then
+	a="$1"
+	s=`echo $a | sed 's/:.*$//'`
+	x=`echo $a | grep : | sed 's/^[^:]*://'`
+	xp=`echo $x | grep '^[A-Z][A-Z0-9]*:[0-9][0-9]*$'`
+	if [[ ( "" != "$xp" ) ]] ; then
+		# A canonical argument...
+		# fall through to process protocol and port
+		canonical=1
+	else
+		xp=`echo $x | grep '^[A-Z][A-Z0-9]*$'`
+		if [[ ( "" != "$xp" ) ]] ; then
+			pp="$xp" ; pn=25;
+			case "$pp" in
+			SMTPS)
+				pn=465 ;;
+			IMAPS)
+				pn=993 ;;
+			SMTP)
+				pn=25 ;;
+			IMAP)
+				pn=143 ;;
+			HTTPS)
+				pn=443 ;;
+			POP3S)
+				pn=995 ;;
+			POP3)
+				pn=110 ;;
+			*)
+				pn=443 ;;
+			esac
+			
+			#echo 1 $zero $s:$pp:$pn
+			$zero $s:$pp:$pn
+			exit
+		else
+			xp=`echo $x | grep '^[0-9][0-9]*$'`
+			pn="$xp" ; pp="NONE";
+			case "$pn" in
+			465)
+				pp="SMTPS" ;;
+			993)
+				pp="IMAPS" ;;
+			25)
+				pp="SMTP" ;;
+			143)
+				pp="IMAP" ;;
+			443)
+				pp="HTTPS" ;;
+			995)
+				pp="POP3S" ;;
+			110)
+				pp="POP3" ;;
+			*)
+				pp="NONE" ;;
+			esac
+			
+			#echo 2 $zero $s:$pp:$pn
+			$zero $s:$pp:$pn
+			exit
+		fi
+	fi
+fi
+
+if [[ ( $canonical == 0 ) ]]; then
+	for s in  "$@@" ; do
+		p=`echo $s | grep : | sed 's/^[^:]*://'`
+		if [[ ( "" == "$p" ) ]]; then
+			p="SMTPS:465:IMAPS:993:SMTP:25:SMTP:587:IMAP:143:HTTPS:443:POP3S:995:POP3:110"
+		fi
+		s=`echo $s | sed 's/:.*$//'`
+		pp=""    # port protocol (name)
+		pn=""    # port number
+		while [[ ! ( -z "$p" ) ]]; do
+			#echo p="|$p|"
+			x=`echo "$p" | sed 's/:.*//'`
+			xx=`echo "$x" | grep '^[0-9][0-9]*$'`
+			p=`echo "$p" | grep : | sed 's/^[^:]*://'`
+			#echo p="|$p|"
+			# handle two ports or protocols in row
+			#  (use default for other)
+			if [[ "" == "$xx" ]] ; then
+				cpn="" ; if [[ ("" != "$pn") ]]; then cpn=":$pn"; fi
+				if [[ ( "" != "$pp" ) ]]; then
+					#echo 3 $zero $s:$pp:$pn
+					$zero $s:$pp${cpn}
+					pn=""
+				fi
+				pp=$x
+			else
+				cpp="" ; if [[ ("" != "$pp") ]]; then cpp=":$pp"; fi
+				if [[ ( "" != "$pn" ) ]]; then
+					#echo 3 $zero $s:$pp:$pn
+					$zero $s${cpp}:$pn
+					pp=""
+				fi
+				pn=$x
+			fi
+			# Normal case is :protocol:port (or :port:protocol)
+			if [[ ( "" != "$pp" ) && ( "" != "$pn" ) ]]; then
+				#echo 3 $zero $s:$pp:$pn
+				$zero $s:$pp:$pn
+				pp=""; pn=""
+			fi	
+		done
+		# an odd port or protocol might be left over
+		if [[ ( "" != "$pp" ) ]]; then
+			#echo 4 $zero $s:$pp
+			$zero $s:$pp
+		fi	
+		if [[ ( "" != "$pn" ) ]]; then
+			#echo 5 $zero $s:$pn
+			$zero $s:$pn
+		fi	
+	done
+	exit
+fi
+
+# Must be canonical; ASSERT only one argument, with $s:$pp:$pn
+s="$1"
+pp=`echo $s | grep : | sed 's/^[^:]*://'`
+pn=`echo $pp | grep : | sed 's/^[^:]*://'`
+pp=`echo $pp | grep : | sed 's/:[^:]*$//'`
+s=`echo $s | sed 's/:.*$//'`
+#	echo $s $pp
+
+#
+# Want to move towards being able to echo command, so would like in one place.
+#
+# All commands are 
+#    $endcmd | sh -c "2>&1 openssl s_client $tlsopt -crlf \
+#                           ${CAargs} -connect ${s}:${pn}"
+# (default tlsopt="")
+# (pn is now only default)
+#
+#  SMTPS endcmd="echo quit" pn=465
+#  IMAPS endcmd="echo 0 logout" pn=993
+#  SMTP  endcmd="echo quit" pn=25  tlsopt="-starttls smtp"
+# (SMTP  endcmd="echo quit" pn=587  tlsopt="-starttls smtp")
+#  IMAP  endcmd="echo 0 logout" pn=143 tlsopt="-starttls imap"
+#  HTTPS endcmd="cat /dev/null" pn=443
+#  NONE  endcmd="cat /dev/null" pn=443?
+#  POP3S endcmd="echo quit" pn=995
+#  POP3  endcmd="echo quit" pn=110 tlsopt="-starttls pop3"
+#
+# Problem: $endcmd needs to be parsed/split?
+# 
+
+# SMTPS port 465
+if [[ ( "SMTPS" == "$pp" ) || ( "465" == "$pn" ) ]]; then
+	b="";if [[ ( "465" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s SMTPS${b}:' '
+	c="" ; cc=0
+		echo echo quit '|' sh -c '"'"2>&1 openssl s_client -crlf ${CAargs} -connect ${s}:${pn}"'"' '>' "$buf"
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		echo quit | sh -c "2>&1 openssl s_client -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+# IMAPS port 993
+if [[ ( "IMAPS" == "$pp" ) || ( "993" == "$pn" ) ]]; then
+	b="";if [[ ( "993" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s IMAPS${b}:' '
+	c="" ; cc=0
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		echo 0 logout | sh -c "2>&1 openssl s_client -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	sleep 1
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+# SMTP / STARTTLS port 25
+if [[ ( "SMTP" == "$pp" ) || ( "25" == "$pn" ) ]]; then
+	b="";if [[ ( "25" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s SMTP${b}:' '
+	c="" ; cc=0
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		echo quit | sh -c "2>&1 openssl s_client -starttls smtp -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	sleep 1
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+## SMTP / STARTTLS port 587
+#if [[ ( "" == "$p" ) || ( "587" == "$p" ) ]]; then
+#	echo -n $s 'SMTP(587): '
+#	c="" ; cc=0
+#	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+#		echo -n .
+#		echo quit | sh -c "2>&1 openssl s_client -starttls smtp -crlf ${CAargs} -connect ${s}:587" > $buf
+#		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+#	done
+#	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+#	sleep 1
+#	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+#	echo " verify:$v $exp"
+#	sleep 1
+#fi
+
+echo "CAargs=${CAargs}" "s=${s}"  "pn=${pn}"
+
+# IMAP/ STARTTLS port 143
+if [[ ( "IMAP" == "$pp" ) || ( "143" == "$pn" ) ]]; then
+	b="";if [[ ( "143" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s IMAP${b}:' '
+	c="" ; cc=0
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		echo 0 logout | sh -c "2>&1 openssl s_client -starttls imap -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	sleep 1
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+# HTTPS port 443
+if [[ ( "HTTPS" == "$pp" ) || ("NONE" == "$pp") || ( "443" == "$pn" ) ]]; then
+	b="";if [[ ( "443" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s ${pp}${b}:' '
+	c="" ; cc=0
+		echo echo quit '|' sh -c '"'"2>&1 openssl s_client -servername ${s} -crlf ${CAargs} -connect ${s}:${pn}"'"' '>' "$buf"
+		# Hmm.  But we actually do "cat /dev/null"
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		cat /dev/null | sh -c "2>&1 openssl s_client -servername ${s} -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+# POP3S port 995
+if [[ ( "POP3S" == "$pp" ) || ( "995" == "$pn" ) ]]; then
+	b="";if [[ ( "995" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s POP3S${b}:' '
+	c="" ; cc=0
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		echo quit | sh -c "2>&1 openssl s_client -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	sleep 1
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+# POP3/ STARTTLS port 110
+if [[ ( "POP3" == "$pp" ) || ( "110" == "$pn" ) ]]; then
+	b="";if [[ ( "110" != "$pn" ) ]]; then b="(${pn})"; fi
+	echo -n $s POP3${b}:' '
+	c="" ; cc=0
+	while [[ ( $cc < 6 ) && ( -z "$c" ) ]] ; do
+		echo -n .
+		echo quit | sh -c "2>&1 openssl s_client -starttls pop3 -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+		c=`cat $buf | grep '^[-]----BEGIN CERTIFICATE-----$'`; cc=$(($cc + 1))
+	done
+	v=`cat $buf | grep '^verify return:' | head -1 | sed 's/^[^:]*://'`
+	sleep 1
+	exp=`cat $buf | sh -c "2>&1 openssl x509 -text" | grep 'Not After *:' | sed 's/^           //'`
+	echo " verify:$v $exp"
+	sleep 1
+fi
+
+
+
+exit 0
+
+@
+
+
+1.2
+log
+@Removing -pause
+@
+text
+@d15 3
+d184 1
+a184 1
+#    $endcmd | sh -c "2>&1 openssl s_client -pause $tlsopt -crlf \
+d207 1
+a207 1
+		echo echo quit '|' sh -c '"'"2>&1 openssl s_client -pause -crlf ${CAargs} -connect ${s}:${pn}"'"' '>' "$buf"
+d210 1
+a210 1
+		echo quit | sh -c "2>&1 openssl s_client -pause -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+d226 1
+a226 1
+		echo 0 logout | sh -c "2>&1 openssl s_client -pause -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+d243 1
+a243 1
+		echo quit | sh -c "2>&1 openssl s_client -pause -starttls smtp -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+d259 1
+a259 1
+#		echo quit | sh -c "2>&1 openssl s_client -pause -starttls smtp -crlf ${CAargs} -connect ${s}:587" > $buf
+d278 1
+a278 1
+		echo 0 logout | sh -c "2>&1 openssl s_client -pause -starttls imap -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+d293 1
+a293 1
+		echo echo quit '|' sh -c '"'"2>&1 openssl s_client -servername ${s} -pause -crlf ${CAargs} -connect ${s}:${pn}"'"' '>' "$buf"
+d297 1
+a297 1
+		cat /dev/null | sh -c "2>&1 openssl s_client -servername ${s} -pause -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+d313 1
+a313 1
+		echo quit | sh -c "2>&1 openssl s_client -pause -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+d330 1
+a330 1
+		echo quit | sh -c "2>&1 openssl s_client -pause -starttls pop3 -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 13
+d290 2
+a291 1
+		echo echo quit '|' sh -c '"'"2>&1 openssl s_client -pause -crlf ${CAargs} -connect ${s}:${pn}"'"' '>' "$buf"
+d294 1
+a294 1
+		cat /dev/null | sh -c "2>&1 openssl s_client -pause -crlf ${CAargs} -connect ${s}:${pn}" > $buf
+@
