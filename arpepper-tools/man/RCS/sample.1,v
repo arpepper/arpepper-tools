@@ -1,0 +1,76 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2021.08.24.21.25.55;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.08.24.21.25.15;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Trying to create a template,
+With comments.
+This used to seem easier in the past.
+@
+
+
+1.2
+log
+@How could we forget BUGS?
+@
+text
+@.TH SAMPLE 1 UW
+.\"
+.\" sample.1
+.\"
+.\" Inspecting /software/local_cs-xh-admin.cs.private.uwaterloo.ca/man/man8
+.\" 
+.\"
+.\" Maximal sections (union) appears to be (in apparent consistenct order)...
+.\" .SH NAME
+.\" .SH SYNOPSIS
+.\" .SH WHERE
+.\" .SH DESCRIPTION
+.\" .SH OPTIONS
+.\" .SH EXAMPLES
+.\" .SH FILES
+.\" .SH HOSTNAMES
+.\" .SH SEE ALSO
+.\" .SH NOTE
+.\" .SH NOTES
+.\" .SH BUGS
+.\" 
+.\" acc_query-graddb-ta-info.8 - seems to have maximal sections
+.\" acc_startend_TA-cs.8 - seems to have maximal sections
+.\"
+.\" SYNOPSIS and WHERE and OPTIONS could use good examples
+.\" I wonder if WHERE always comes between SYNOPSIS and DESCRIPTION ?
+.\"
+.SH NAME
+sample \- just a for instance man page
+.SH SYNOPSIS
+.hc %
+.B "%sample"
+[fieldnumber]...
+.SH DESCRIPTION
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d20 1
+@

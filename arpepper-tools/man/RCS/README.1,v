@@ -1,0 +1,160 @@
+head	1.5;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.5
+date	2021.08.26.09.51.23;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2021.08.25.21.31.34;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2021.08.25.21.26.42;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2021.08.25.21.24.47;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.08.25.21.09.08;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Produce a README.
+@
+
+
+1.5
+log
+@Put a preliminary hint.
+@
+text
+@.\" You should view this page using "man -l README.`"
+.\"
+.TH README 1 UW
+.\"
+.\" You can read the man pages in this directory by using
+.\" 
+.\"   man -l pagename
+.\"
+.\" WHERE
+.\"  pagename must include the extension
+.\"
+.\" EXAMPLE
+.\"  man -l README.1
+.\"
+.SH NAME
+README \- a simple README for this directory
+.SH SYNOPSIS
+.hc %
+.B man -l "%README.1"
+.SH DESCRIPTION
+.pp
+.\" following is a kludge to avoid ugliness
+.nf
+You can read the man pages in this directory
+.hc %
+%(/software/accounts-master/data/sponsors/bin/.man/)
+by using
+.br
+.nf
+.RS 
+man -l pagename
+.R# 
+.fi
+.PP
+.SH WHERE
+.I pagename
+must include the extension
+.PP
+.\"
+If you are not in this directory, a complete pathname can be specified.
+.SH EXAMPLES
+.br
+.nf
+.RS 
+man -l README.1
+.br
+man -l ./README.1
+.br
+man -l /software/accounts-master/data/sponsors/bin/.man/README.1
+.br
+man -l populate.DATA.8
+.br
+.R# 
+.fi
+.SH SEE ALSO
+.B man
+- an interface to the on-line reference manuals
+.SH BUGS
+.PP
+It seems that on the originating host
+%(cs-xh-admin.cs.uwaterloo.ca)
+if you specify the "-H" option, intending to obtain HTML output, it does
+not work.
+It appears that insufficient
+.B man
+and (more specifically)
+.B groff
+packages have been installed to produce such output.
+Most pages should format to HTML sufficiently if transferred to some system
+where %"man\ -l\ -Hcat" works.
+
+@
+
+
+1.4
+log
+@Tweak the -H bug explanation.
+@
+text
+@d1 2
+@
+
+
+1.3
+log
+@Remove incorrect mention of filename README.1 where the containing
+directory name was wanted.
+@
+text
+@d60 3
+a62 1
+if you specify the "-H" option for HTML output, insufficient
+d67 2
+a68 2
+Most pages should format to HTML sufficiently if transferred to systems
+where "man -l -Hcat" works.
+@
+
+
+1.2
+log
+@A workable README
+@
+text
+@d24 1
+a24 1
+%(/software/accounts-master/data/sponsors/bin/.man/README.1)
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 67
+@

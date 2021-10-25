@@ -1,0 +1,59 @@
+.TH APF 1 UW
+
+.\" apf.1
+.SH NAME
+apf \- awk print fields
+.SH SYNOPSIS
+.hc %
+.B "%apf"
+[fieldnumber]...
+.SH DESCRIPTION
+.I apf
+is intended to print selected fields from an input file
+of password file format (that is, with colon-separated fields).
+.PP
+Unlike
+.BR cut ,
+.I apf
+can re-order fields, and even replicate a field several times.
+.PP
+At the time of writing it calls
+.nf
+.RS
+awk
+.RE
+.fi
+.PP
+.SH OPTIONS
+This command takes no optionss (just arguments)
+.SH EXAMPLES
+.nf
+     apf 3 1 2 4
+.fi
+.nf
+     apf 2 2 2 2
+.fi
+.SH SEE ALSO
+%awkf(1),
+%awk(1)
+.SH NOTE
+This command was really just a personal convenience.
+.PP
+The standard command
+.B "cut"
+looks similar, but
+.B "apf"
+will re-order or even replicate fieldss, while
+.B "cut"
+will not.
+.PP
+The standard command
+.B "join"
+can be made to perform these operations (by specifying /dev/null
+as one of its input files),
+but the syntax is longer, and more awkward.
+.PP
+.SH BUGS
+Arguments are not checked at all.
+In fact, arbitrary awk can be injected into the command run.
+

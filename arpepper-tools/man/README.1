@@ -1,0 +1,71 @@
+.\" You should view this page using "man -l README.`"
+.\"
+.TH README 1 UW
+.\"
+.\" You can read the man pages in this directory by using
+.\" 
+.\"   man -l pagename
+.\"
+.\" WHERE
+.\"  pagename must include the extension
+.\"
+.\" EXAMPLE
+.\"  man -l README.1
+.\"
+.SH NAME
+README \- a simple README for this directory
+.SH SYNOPSIS
+.hc %
+.B man -l "%README.1"
+.SH DESCRIPTION
+.pp
+.\" following is a kludge to avoid ugliness
+.nf
+You can read the man pages in this directory
+.hc %
+%(/software/accounts-master/data/sponsors/bin/.man/)
+by using
+.br
+.nf
+.RS 
+man -l pagename
+.R# 
+.fi
+.PP
+.SH WHERE
+.I pagename
+must include the extension
+.PP
+.\"
+If you are not in this directory, a complete pathname can be specified.
+.SH EXAMPLES
+.br
+.nf
+.RS 
+man -l README.1
+.br
+man -l ./README.1
+.br
+man -l /software/accounts-master/data/sponsors/bin/.man/README.1
+.br
+man -l populate.DATA.8
+.br
+.R# 
+.fi
+.SH SEE ALSO
+.B man
+- an interface to the on-line reference manuals
+.SH BUGS
+.PP
+It seems that on the originating host
+%(cs-xh-admin.cs.uwaterloo.ca)
+if you specify the "-H" option, intending to obtain HTML output, it does
+not work.
+It appears that insufficient
+.B man
+and (more specifically)
+.B groff
+packages have been installed to produce such output.
+Most pages should format to HTML sufficiently if transferred to some system
+where %"man\ -l\ -Hcat" works.
+

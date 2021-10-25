@@ -1,0 +1,107 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2021.08.24.21.41.27;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.08.24.21.29.33;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Split each input line into fields, one-per-line, assuming ":" is the
+delimiter.  (I.e. /etc/passwd style files)
+ 
+Man page.
+
+Initial revision is empty.
+@
+
+
+1.2
+log
+@A useful man page.
+@
+text
+@.TH AWKF 1 UW
+
+.\" awkf.1
+.SH NAME
+awkf \- awk fields
+.SH SYNOPSIS
+.hc %
+.B "%awkf"
+.SH DESCRIPTION
+.I awkf
+shows the ":" delimited fields of each input line,
+one per output line, preceded by a one-origin field number.
+.PP
+This can be useful to help construct further
+.B awk
+or
+.B perl
+commands, or similar.
+.PP
+At the time of writing it calls
+.nf
+.RS
+awk
+.RE
+.fi
+.PP
+.SH OPTIONS
+This command takes no options or arguments.
+.SH EXAMPLES
+.nf
+     egrep '^root|^bin:' /etc/passwd | awkf
+.fi
+.PP
+produces
+.nf
+ 1:root
+ 2:x
+ 3:0
+ 4:0
+ 5:root
+ 6:/root
+ 7:/bin/bash
+ 1:bin
+ 2:x
+ 3:2
+ 4:2
+ 5:bin
+ 6:/bin
+ 7:/usr/sbin/nologin
+.fi
+.PP
+Usually the output is more useful when the input contains
+only one record (one line).
+.SH SEE ALSO
+%apf(1),
+%awk(1)
+.SH NOTE
+This command was really just a personal convenience.
+.PP
+.\".SH BUGS
+.\"Arguments are not checked at all.
+.\"In fact, arbitrary awk can be injected into the command run.
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 63
+@

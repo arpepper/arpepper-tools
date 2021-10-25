@@ -1,0 +1,153 @@
+.TH RCSSHOW 1 UW
+rcsshow.1
+.\"
+.\" rcsshow.1
+.\"
+.\" Inspecting /software/local_cs-xh-admin.cs.private.uwaterloo.ca/man/man1
+.\" 
+.\"
+.\" Maximal sections (union) appears to be (in apparent consistenct order)...
+.\" .SH NAME
+.\" .SH SYNOPSIS
+.\" .SH WHERE
+.\" .SH DESCRIPTION
+.\" .SH OPTIONS
+.\" .SH EXAMPLES
+.\" .SH FILES
+.\" .SH HOSTNAMES
+.\" .SH SEE ALSO
+.\" .SH NOTE
+.\" .SH NOTES
+.\" .SH BUGS
+.\" 
+.\" acc_query-graddb-ta-info.8 - seems to have maximal sections
+.\" acc_startend_TA-cs.8 - seems to have maximal sections
+.\"
+.\" SYNOPSIS and WHERE and OPTIONS could use good examples
+.\" I wonder if WHERE always comes between SYNOPSIS and DESCRIPTION ?
+.\"
+.SH NAME
+rcsshow \- show RCS log interspersed with changes
+.SH SYNOPSIS
+.hc %
+.B "%rcsshow"
+
+.SH WHERE
+.B "%rcsshow"
+.SH DESCRIPTION
+.PP
+After removing apparent options
+.B "%rcsshow"
+assumes all other parameters are file names to be passed to
+.BR rlog .
+.PP
+For each given file,
+.B "%rcsshow"
+shows its
+.I rlog
+output in chronological order, interspersed with the
+.I rcsdiff
+output corresponding to the revision.
+.PP
+Options beginning with 
+.I -r
+are assumed to be for
+.I rlog
+while any other options are given
+to
+.IR rcsdiff .
+.PP
+Chronological order, as opposed to reverse chronological order,
+seems to be a big win.
+.SH EXAMPLES
+.\".PP
+.\" Example 1
+.RS
+.nf
+.ft CW
+.ne 3
+rcsshow -r1.209: -U3 CLASSES/Tutors
+.RE
+.fi
+.sp
+.PP
+That will show, in chronological order, all revisions from
+.I 1.209
+on in unified diff format with 3 lines of context.
+.sp
+.\"
+.\" Example 2
+.RS
+.nf
+.ft CW
+.ne 3
+rcsshow -r1.209:1.210 -U100000 CLASSES/Tutors
+.RE
+.fi
+.sp
+.PP
+That will (unless the file is more than 100,000 lines) show the entire
+file with changes corresponding to the given revision
+indicated in unified diff format.
+.sp
+.\"
+.\"
+.\" Example 3
+.RS
+.nf
+.ft CW
+.ne 3
+rcsshow -q CLASSES/Tutors
+.RE
+.fi
+.sp
+.PP
+That will (somewhat slowly for large RCS files) show all
+.I rlog
+entries in chronological order, with no
+.I diff
+output.
+.\"
+.\"
+.\"
+.SH FILES
+.SH SEE ALSO
+.BR %rlog (1)
+- print log messages and other information about RCS files
+.br
+.BR %rcsdiff (1)
+- compare RCS revisions
+.br
+.BR %diff (1)
+- compare files line by line
+.br
+.BR %rcsfile (5)
+- RCS file format
+.br
+.BR %rcs (1)
+- change RCS file attributes
+.br
+
+.SH BUGS
+.sp
+.\"
+.\"
+.\" Example
+.RS
+.nf
+.ft CW
+.ne 3
+rcsshow -r [filename]...
+.RE
+.fi
+.sp
+.PP
+Produces no output, whereas  one might expect it to show
+the
+.B rlog
+entry for the latest revision, and the
+.B rcsdiff
+output with the "previous" release.
+.PP
+In general, one fewer revision is shown in the output than might be expected.
+

@@ -1,0 +1,148 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2021.08.25.19.58.41;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.08.25.19.04.39;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Man page for codstar.
+
+Initial revision is empty.
+@
+
+
+1.2
+log
+@A useable version.
+@
+text
+@.TH CODSTAR 1 UW
+.\"
+.\" codstar.1
+.\"
+.\" Inspecting /software/local_cs-xh-admin.cs.private.uwaterloo.ca/man/man8
+.\" 
+.\"
+.\" Maximal sections (union) appears to be (in apparent consistenct order)...
+.\" .SH NAME
+.\" .SH SYNOPSIS
+.\" .SH WHERE
+.\" .SH DESCRIPTION
+.\" .SH OPTIONS
+.\" .SH EXAMPLES
+.\" .SH FILES
+.\" .SH HOSTNAMES
+.\" .SH SEE ALSO
+.\" .SH NOTE
+.\" .SH NOTES
+.\" .SH BUGS
+.\" 
+.\" acc_query-graddb-ta-info.8 - seems to have maximal sections
+.\" acc_startend_TA-cs.8 - seems to have maximal sections
+.\"
+.\" SYNOPSIS and WHERE and OPTIONS could use good examples
+.\" I wonder if WHERE always comes between SYNOPSIS and DESCRIPTION ?
+.\"
+.SH NAME
+codstar \- recursively show checked-out (co'd) files
+.SH SYNOPSIS
+.hc %
+.B "%codstar"
+.SH DESCRIPTION
+.B codstar
+recursively searches non-dot patterns  beneath the current directory
+for any RCS files which are in checked-out state, and lists
+the corresponding working-files for each.
+.SH EXAMPLES
+.\".PP
+.\" Example 1
+.RS
+.nf
+.ft CW
+.ne 3
+codstar
+.RE
+.fi
+.sp
+.PP
+Might produce something like
+.sp
+.RS
+.nf
+.ft CW
+.RS
+.ne 3
+bin/xh-clone-pkg
+bin/rcsdstar
+proj-cs-xh-admin/renumbering-20120417/allmaps
+proj-cs-xh-admin/RT1148152-isaS21/README
+.RE
+.RE
+.fi
+.sp
+.SH SEE ALSO
+.\" 
+.B codall
+\- recursively show all checked-out (co'd) files
+.RS
+.PP
+That related command
+.B codall
+will search everything beneath the current directory, including
+"dot-files" (and "dot-directories").
+.sp
+.RE
+.B rlog
+\- print log messages and other information about RCS files
+.br
+.B sed
+\- stream editor for filtering and transforming text
+.br
+.sp
+.SH NOTE
+.PP
+Fundamentally,
+.B codstar
+runs
+.\" Example
+.RS
+.nf
+.ft CW
+.ne 3
+rlog -L -R filename
+.RE
+.fi
+.sp
+.PP
+on each RCS file found, and then,
+using
+.BR sed ,
+transforms the output into the
+(probable) working file name.
+.SH BUGS
+.PP
+Conceivably, the transformation to working file name will occasionally go wrong.
+.PP
+Dot directories within top-level non-dot directories are searched.  Perhaps that is not always wanted, but could be filtered out.
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 108
+@

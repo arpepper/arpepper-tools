@@ -1,0 +1,144 @@
+head	1.3;
+access;
+symbols;
+locks
+	arpepper:1.3; strict;
+comment	@# @;
+
+
+1.3
+date	2021.08.24.22.39.21;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2021.08.24.21.27.52;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.08.20.14.58.43;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@awk print fields
+Initial revision is just a very small template.
+@
+
+
+1.3
+log
+@Remove left-over line from sample.1
+ 
+Replace it with a brief explanation of re-ordering and replicating fields.
+@
+text
+@.TH APF 1 UW
+
+.\" apf.1
+.SH NAME
+apf \- awk print fields
+.SH SYNOPSIS
+.hc %
+.B "%apf"
+[fieldnumber]...
+.SH DESCRIPTION
+.I apf
+is intended to print selected fields from an input file
+of password file format (that is, with colon-separated fields).
+.PP
+Unlike
+.BR cut ,
+.I apf
+can re-order fields, and even replicate a field several times.
+.PP
+At the time of writing it calls
+.nf
+.RS
+awk
+.RE
+.fi
+.PP
+.SH OPTIONS
+This command takes no optionss (just arguments)
+.SH EXAMPLES
+.nf
+     apf 3 1 2 4
+.fi
+.nf
+     apf 2 2 2 2
+.fi
+.SH SEE ALSO
+%awkf(1),
+%awk(1)
+.SH NOTE
+This command was really just a personal convenience.
+.PP
+The standard command
+.B "cut"
+looks similar, but
+.B "apf"
+will re-order or even replicate fieldss, while
+.B "cut"
+will not.
+.PP
+The standard command
+.B "join"
+can be made to perform these operations (by specifying /dev/null
+as one of its input files),
+but the syntax is longer, and more awkward.
+.PP
+.SH BUGS
+Arguments are not checked at all.
+In fact, arbitrary awk can be injected into the command run.
+
+@
+
+
+1.2
+log
+@More.
+@
+text
+@d15 4
+a18 1
+It also does this.
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+.TH SAMPLE-COMMAND 1 UW
+d3 1
+a3 1
+.\" sample-command.1
+d5 1
+a5 1
+sample-command \- what this command does
+d8 2
+a9 1
+.B "%sample-command"
+d11 3
+a13 2
+.I sample-command
+does what it does.
+d20 1
+a20 1
+another-sample-command
+a23 1
+More thoughts.
+d25 8
+a32 1
+This command takes no options.
+d34 2
+a35 1
+%awkf(1)
+d39 17
+@
