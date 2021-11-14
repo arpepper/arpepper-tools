@@ -1,0 +1,168 @@
+head	1.3;
+access;
+symbols;
+locks
+	arpepper:1.3; strict;
+comment	@# @;
+
+
+1.3
+date	2021.11.13.22.52.09;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2021.11.13.19.29.46;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.11.13.17.20.09;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Add implied vectors of ARGV to first rgb: element found on
+input lines, printing results retaining any other contents
+on the input lines.
+
+Initial revision, modified from rgb-grey, appears to work.
+@
+
+
+1.3
+log
+@Crude range checking of calculation results.
+I suspect we will need to change this for some desired calculations
+in future.
+@
+text
+@#!/usr/bin/perl -w
+
+sub
+add1 {
+	my($string,@@m) = @@_;
+	my($bad) = ("rgb:00/00/00");
+	my($r,$g,$b);
+	my($new);
+
+	$string =~ s/\n//g;
+# rgb:1b/05/8b
+	my ($x) = "[0-9a-f]";
+	return $string if ($string !~ m,rgb:$x$x/$x$x/$x$x,);
+
+	my($pref,$rgb,$suff);
+	#return $bad if ($string !~ m,^rgb:$x$x/$x$x/$x$x,);
+	$string =~ m,^(.*)(rgb:$x$x/$x$x/$x$x)(.*)$,;
+	($pref,$rgb,$suff) = ($1,$2,$3);
+
+	$rgb =~ s/^rgb://;
+	($r,$g,$b) = split('/',$rgb);
+	$r = 0 + oct("0x$r");
+	$g = 0 + oct("0x$g");
+	$b = 0 + oct("0x$b");
+
+	for ($i=0; defined($m[$i+2]); ++$i) {
+		$r += $m[$i+0];
+		$g += $m[$i+1];
+		$b += $m[$i+2];
+	}
+	$r = 0 if ($r < 0);
+	$g = 0 if ($g < 0);
+	$b = 0 if ($b < 0);
+	$r = 0xff if ($r > 0xff);
+	$g = 0xff if ($g > 0xff);
+	$b = 0xff if ($b > 0xff);
+
+# Following should be reduncant, but will avoid trouble
+	$r = ($r & 0xff);
+	$g = ($g & 0xff);
+	$b = ($b & 0xff);
+
+	return sprintf("$pref"."rgb:%2.2x/%2.2x/%2.2x"."$suff", $r, $g, $b);
+}
+
+@@maps=();
+while (defined $ARGV[0]) {
+	my($s) = ($ARGV[0]);
+	my($sign);
+	shift;
+
+	$sign = 1;
+	last if ( $s eq "--" );
+	if ($s =~ /^([-+])/ ) {
+		$sign = $1 eq "-" ? -1 : 1;
+		$s =~ s/^[-+]//;
+	}
+	my($isrgb) = 0;
+	if ($s =~ /^rgb:/) {
+		$isrgb = 1;
+		$s =~ s/^rgb://;
+	}
+	if ($isrgb) {
+		my(@@a) = split('/',$s);
+		my ($x) = "[0-9a-f]";
+		foreach $aa (@@a) {
+			if ( $aa =~ /^$x$x$/ ) {
+				push @@maps, (0 + oct("0x$aa")) * $sign;
+			}
+			else {
+				push @@maps, 0;
+			}
+		}
+	}
+	else {
+		my(@@a) = split(',',$s);
+		foreach $aa (@@a) {
+			if ($aa =~ /^0/) {
+				push @@maps, (0 + oct($aa)) * $sign;
+			}
+			else {
+				push @@maps, (0 + $aa) * $sign;
+			}
+		}
+	}
+	
+	#push @@maps,0+$ARGV[0];
+}
+
+$p = $#maps;
+$pad = $maps[$p];
+if (!defined($pad)) {
+	$pad = 0;
+	push @@maps,$pad;
+}
+while () {
+$p = $#maps;
+#print "$p\n";
+	last if ( int(($p+1)/3)*3 == ($p + 1) );
+	push @@maps, $pad;
+}
+
+while (<>) {
+	print add1($_,@@maps),"\n";
+}
+@
+
+
+1.2
+log
+@Only interpret octal if token begins with 0.
+Pad the "vectors" to an even multiple of three, using the last given value.
+@
+text
+@d31 8
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d70 6
+a75 1
+			push @@maps, (0 + oct($aa)) * $sign;
+d82 12
+@

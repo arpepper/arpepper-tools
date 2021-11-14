@@ -1,0 +1,214 @@
+head	1.4;
+access;
+symbols;
+locks
+	arpepper:1.4; strict;
+comment	@# @;
+
+
+1.4
+date	2021.11.13.22.52.09;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2021.11.13.19.33.21;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2021.11.13.17.36.26;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.11.13.17.33.58;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Multiply first rgb: element found on each line by the
+implied vectors of ARGV.
+Print the results, retaining any other contents from the input lines.
+
+Initial revision, modified from rgb-add. appears to work.
+@
+
+
+1.4
+log
+@Crude range checking of calculation results.
+I suspect we will need to change this for some desired calculations
+in future.
+@
+text
+@#!/usr/bin/perl -w
+
+sub
+add1 {
+	my($string,@@m) = @@_;
+	my($bad) = ("rgb:00/00/00");
+	my($r,$g,$b);
+	my($new);
+
+	$string =~ s/\n//g;
+# rgb:1b/05/8b
+	my ($x) = "[0-9a-f]";
+	return $string if ($string !~ m,rgb:$x$x/$x$x/$x$x,);
+
+	my($pref,$rgb,$suff);
+	#return $bad if ($string !~ m,^rgb:$x$x/$x$x/$x$x,);
+	$string =~ m,^(.*)(rgb:$x$x/$x$x/$x$x)(.*)$,;
+	($pref,$rgb,$suff) = ($1,$2,$3);
+
+	$rgb =~ s/^rgb://;
+	($r,$g,$b) = split('/',$rgb);
+	$r = 0 + oct("0x$r");
+	$g = 0 + oct("0x$g");
+	$b = 0 + oct("0x$b");
+
+	for ($i=0; defined($m[$i+2]); ++$i) {
+		$r *= $m[$i+0];
+		$g *= $m[$i+1];
+		$b *= $m[$i+2];
+	}
+	$r = 0 if ($r < 0);
+	$g = 0 if ($g < 0);
+	$b = 0 if ($b < 0);
+	$r = 0xff if ($r > 0xff);
+	$g = 0xff if ($g > 0xff);
+	$b = 0xff if ($b > 0xff);
+
+# Following should be reduncant, but will avoid trouble
+	$r = ($r & 0xff);
+	$g = ($g & 0xff);
+	$b = ($b & 0xff);
+
+	return sprintf("$pref"."rgb:%2.2x/%2.2x/%2.2x"."$suff", $r, $g, $b);
+}
+
+@@maps=();
+while (defined $ARGV[0]) {
+	my($s) = ($ARGV[0]);
+	my($sign);
+	shift;
+
+	$sign = 1;
+	last if ( $s eq "--" );
+	if ($s =~ /^([-+])/ ) {
+		$sign = $1 eq "-" ? -1 : 1;
+		$s =~ s/^[-+]//;
+	}
+	my($isrgb) = 0;
+	if ($s =~ /^rgb:/) {
+		$isrgb = 1;
+		$s =~ s/^rgb://;
+	}
+	if ($isrgb) {
+		my(@@a) = split('/',$s);
+		my ($x) = "[0-9a-f]";
+		foreach $aa (@@a) {
+			if ( $aa =~ /^$x$x$/ ) {
+				push @@maps, (0 + oct("0x$aa")) * $sign;
+			}
+			else {
+				push @@maps, 0;
+			}
+		}
+	}
+	else {
+		my(@@a) = split(',',$s);
+		foreach $aa (@@a) {
+			if ( $aa =~ /[.]/ ) {
+				push @@maps, (0.0 + $aa) * $sign;
+			}
+			else {
+				if ($aa =~ /^0/) {
+					push @@maps, (0 + oct($aa)) * $sign;
+				}
+				else {
+					push @@maps, (0 + $aa) * $sign;
+				}
+			}
+		}
+	}
+	
+	#push @@maps,0+$ARGV[0];
+}
+
+$p = $#maps;
+$pad = $maps[$p];
+if (!defined($pad)) {
+	$pad = 1;
+	push @@maps,$pad;
+}
+while () {
+$p = $#maps;
+#print "$p\n";
+	last if ( int(($p+1)/3)*3 == ($p + 1) );
+	push @@maps, $pad;
+}
+
+while (<>) {
+	print add1($_,@@maps),"\n";
+}
+@
+
+
+1.3
+log
+@Brought over changes from rgb-add
+
+Only interpret octal if token begins with 0.
+Pad the "vectors" to an even multiple of three, using the last given value.
+(Use identity of 1 instead of 0,however).
+@
+text
+@d31 8
+@
+
+
+1.2
+log
+@Changes were (even simpler than they look)...
+
+--- rgb-add     2021-11-13 12:19:19.837586495 -0500
++++ rgb-mul     2021-11-13 12:26:58.212910468 -0500
+@@@@ -26,5 +26,5 @@@@
+        for ($i=0; defined($m[$i+2]); ++$i) {
+-               $r += $m[$i+0];
+-               $g += $m[$i+1];
+-               $b += $m[$i+2];
++               $r *= $m[$i+0];
++               $g *= $m[$i+1];
++               $b *= $m[$i+2];
+        }
+@@@@ -69,3 +69,8 @@@@
+                foreach $aa (@@a) {
+-                       push @@maps, (0 + oct($aa)) * $sign;
++                       if ( $aa =~ /[.]/ ) {
++                               push @@maps, (0.0 + $aa) * $sign;
++                       }
++                       else {
++                               push @@maps, (0 + oct($aa)) * $sign;
++                       }
+                }
+
+The two programs could be one, with operator specified, but
+a few interpretations and defaults need to change.
+@
+text
+@d74 6
+a79 1
+				push @@maps, (0 + oct($aa)) * $sign;
+d87 12
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@@

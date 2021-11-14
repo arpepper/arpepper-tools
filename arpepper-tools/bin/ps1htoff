@@ -1,0 +1,11 @@
+# source bin/ps1htoff
+
+
+# set title to hostname only, retain previous prompt
+source ps1 h T
+# This will not work since the first prompt is never used
+xtermname "$@"
+
+# turn off title setting in prompt, retain previous prompt
+source ps1 T
+

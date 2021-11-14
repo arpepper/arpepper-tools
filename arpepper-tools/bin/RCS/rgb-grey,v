@@ -1,0 +1,86 @@
+head	1.2;
+access;
+symbols;
+locks
+	arpepper:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2021.11.13.16.28.54;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.11.10.21.36.14;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Outputs colors only.
+Would be nice to transform only the rgb part of an input line.
+@
+
+
+1.2
+log
+@Allow prefixes and suffixes on input to aid in piping
+e.g. color config files.
+Will need to think about how and when comments should be handled.
+@
+text
+@#!/usr/bin/perl -w
+
+sub
+grey1 {
+	my($string) = @@_;
+	my($bad) = ("rgb:00/00/00");
+	my($r,$g,$b);
+	my($new);
+
+	$string =~ s/\n//g;
+# rgb:1b/05/8b
+	my ($x) = "[0-9a-f]";
+	return $string if ($string !~ m,rgb:$x$x/$x$x/$x$x,);
+
+	my($pref,$rgb,$suff);
+	#return $bad if ($string !~ m,^rgb:$x$x/$x$x/$x$x,);
+	$string =~ m,^(.*)(rgb:$x$x/$x$x/$x$x)(.*)$,;
+	($pref,$rgb,$suff) = ($1,$2,$3);
+
+	$rgb =~ s/^rgb://;
+	($r,$g,$b) = split('/',$rgb);
+	$r = 0 + oct("0x$r");
+	$g = 0 + oct("0x$g");
+	$b = 0 + oct("0x$b");
+	$new = ($r + $g + $b) / 3;
+# https://www.dynamsoft.com/blog/insights/image-processing/image-processing-101-color-space-conversion/
+# Grayscale  = 0.299R + 0.587G + 0.114B
+	$new = (0.299*$r + 0.587*$g + 0.114*$b);
+	return sprintf("$pref"."rgb:%2.2x/%2.2x/%2.2x"."$suff",
+					 $new, $new, $new);
+}
+
+while (<>) {
+	print grey1($_),"\n";
+}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d13 1
+a13 1
+	return $bad if ($string !~ m,^rgb:$x$x/$x$x/$x$x,);
+d15 7
+a21 2
+	$string =~ s/^rgb://;
+	($r,$g,$b) = split('/',$string);
+d29 2
+a30 1
+	return sprintf("rgb:%2.2x/%2.2x/%2.2x", $new, $new, $new);
+@

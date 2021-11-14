@@ -1,0 +1,672 @@
+head	1.4;
+access;
+symbols;
+locks
+	arpepper:1.4; strict;
+comment	@# @;
+
+
+1.4
+date	2021.11.13.23.46.58;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2021.11.12.22.57.23;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2021.11.12.19.50.38;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2021.11.08.13.31.53;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@This evolved through complication to try to be something simple.
+Might as well keep RCS backups.
+@
+
+
+1.4
+log
+@Half-implement y(string) (does y(${VAR}) almost automatically.
+I say half-implemented because tours does not use it.
+
+Assume any unrecognized letter should be turned into a \\ escepe.
+@
+text
+@# source bin/ps1
+
+# ps1 - set PS1 according to arguments
+#
+# This allows us to scope all our variables
+
+function __ps1() {
+	local ps1
+	local oldps1 oldtitle oldprompt
+	local cmd toours fromours
+	local oldourtitle newourtitle oldourprompt newourprompt
+	local newtitle newprompt
+	local args
+	local add_to_title s i
+
+# quotes in the following are needed to preserve spaces properly
+oldps1=`echo "$PS1"`
+# 0000000 134 133 134 145 135 060 073 134 165 100 134 150 072 040 134 167
+#           \   [   \   e   ]   0   ;   \   u   @@   \   h   :       \   w
+# 0000020 134 141 134 135 134 165 100 134 150 072 134 167 050 044 123 110
+#           \   a   \   ]   \   u   @@   \   h   :   \   w   (   $   S   H
+# 0000040 114 126 114 051 044 040 012
+#           L   V   L   )   $      \n
+# 0000047
+# Problems: ${debian_chroot:+($debian_chroot)} just disappears
+#           \$ shows as evaluated.
+#           similarly for $SHLVL
+#
+# Strangely, currently root ends up with PS1
+# 0000000 044 173 144 145 142 151 141 156 137 143 150 162 157 157 164 072
+#           $   {   d   e   b   i   a   n   _   c   h   r   o   o   t   :
+# 0000020 053 050 044 144 145 142 151 141 156 137 143 150 162 157 157 164
+#           +   (   $   d   e   b   i   a   n   _   c   h   r   o   o   t
+# 0000040 051 175 134 165 100 134 150 072 134 167 134 044 040 012
+#           )   }   \   u   @@   \   h   :   \   w   \   $      \n
+# 0000056
+#
+# My quoting was wrong, but so was standard for title-setting case.
+# Is the last thing in a standard title really an ASCII bell?
+#
+# After fixing...
+# 0000000 134 133 134 145 135 060 073 044 173 144 145 142 151 141 156 137
+#           \   [   \   e   ]   0   ;   $   {   d   e   b   i   a   n   _
+# 0000020 143 150 162 157 157 164 072 053 050 044 144 145 142 151 141 156
+#           c   h   r   o   o   t   :   +   (   $   d   e   b   i   a   n
+# 0000040 137 143 150 162 157 157 164 051 175 134 150 072 040 134 167 134
+#           _   c   h   r   o   o   t   )   }   \   h   :       \   w   \
+# 0000060 141 134 135 044 173 144 145 142 151 141 156 137 143 150 162 157
+#           a   \   ]   $   {   d   e   b   i   a   n   _   c   h   r   o
+# 0000100 157 164 072 053 050 044 144 145 142 151 141 156 137 143 150 162
+#           o   t   :   +   (   $   d   e   b   i   a   n   _   c   h   r
+# 0000120 157 157 164 051 175 134 165 100 134 150 072 134 167 050 044 123
+#           o   o   t   )   }   \   u   @@   \   h   :   \   w   (   $   S
+# 0000140 110 114 126 114 051 134 044 040 012
+#           H   L   V   L   )   \   $      \n
+# 0000151
+# 
+# \\\[\\e.*\\\]  - indicates xterm title setting
+# Remainder (including spaces) is regular prompt
+oldtitle="$oldps1"
+oldprompt="$oldps1"
+
+if ( false ) ; then
+# Useful demonstrations of bash interpretation
+echo 'backslash \\' | od -bc -
+echo 'backslash \\\\' | od -bc -
+echo 'backslash \\\[' | od -bc -
+echo 'backslash \\\[' | od -bc -
+echo 'backslash \\\[\[' | od -bc -
+echo 'backslash \134\134\[\[' | od -bc -
+echo 'backslash \134\134\[\[\n' | od -bc -
+echo "backslash \134\134\[\[\n" | od -bc -
+echo 's/^(\\\[\\e.*\]).*$/$1/;print' | od -bc
+
+echo "$oldtitle" | od -bc -
+echo
+fi
+
+# We need to put this all in a function which returns new value for PS1
+
+# echo "$PS1" | od -bc -
+
+#oldtitle=`echo "$oldtitle" | sed 's/(^\\\[\\e[^\]]*\]).*/$1/'`
+#oldtitle=`echo "$oldtitle" | perl -ne 's/^(\\\[\\e[^\]]*\]).*$/xxxxx/;print'`
+# backslash literal-lbkt backslash e
+#oldtitle=`echo "$oldtitle" | perl -ne 's/^(\\\[\\e[^\]]*\]).*$/xxxxx/;print'`
+#oldtitle=`echo "$oldtitle" | perl -ne 's/^(\\.\\e.*\]).*$/xxxxx/;print'`
+#oldtitle=`echo "$oldtitle" | tr '\134' 'Z' | perl -ne 's/^(Z\[Ze.*\]).*$/$1/;print'`
+# oldtitle=`echo "$oldtitle" | perl -ne 's/^(\\\[\\e.*\]).*$/$1/;print'`
+# In order to get/keep the backslash counts correct, we seem to
+#   need to put it in a variable as follows...
+# Backslash is literal in bash and needs no escaping?
+cmd='if($_!~/^\\\[\\e.*\\\]/){$_="\n";};s/^(\\\[\\e.*\\\]).*$/$1/;print'
+                      # could be foiled by sneaky prompt
+#echo "$cmd"
+#oldtitle=`echo "$oldtitle" | perl -ne "$cmd" ; echo "$cmd"`
+oldtitle=`echo "$oldtitle" | perl -ne "$cmd"`
+
+#echo "$oldtitle" | od -bc -
+#echo oldtitle="$oldtitle"
+
+cmd='s/^\\\[\\e.*\](.*)$/$1/;print'   # could be foiled by sneaky prompt
+oldprompt=`echo "$oldprompt" | perl -ne "$cmd"`
+#echo "$oldprompt" | od -bc -
+#echo oldprompt="$oldprompt"
+
+# toours - perl -e script
+#toours=<<'_EOF'   # Nope!
+# https://stackoverflow.com/questions/28565623/can-a-bash-heredoc-put-its-result-directly-into-a-variable
+IFS= read -r -d '' toours <<'_EOF' || true
+%reps = ( ' ', 'B', '$', "p");
+while (<>) {
+ # % and automatic brace balance seems to match differently at different times
+	$s = $_;
+	$istitle = 0;
+	$s =~ s/\n//g;
+	$new = "";
+	while ( $s ne "" ) {
+		$c = $s;
+ 		# \[\e]0;   backslashes literal
+		if ( $s =~/^\\\[\\e\]0;/ ) {
+			$s =~ s/^\\\[\\e\]0;//;
+			$c = "";  # just remove escape from assumed title
+			$istitle = 1;
+		}
+		elsif ( $s=~/^\$[{]/)   # }
+			{   # trying to appease vi
+			# ${debian_chroot:+($debian_chroot)}'
+			# {
+			$c =~ s/^(.*}).*/$1/;
+			$s =~ s/^..//;  # {
+			$s =~ s/^.*[}].//;
+			$c = $c =~ /^\$[{]deb/ ? "c" : "?";  # Q&D for now }
+		}
+		elsif ( $s=~/^\$/) {  # ($SHLVL)  (${SHLVL}
+			$c =~ s/^.(\w*).*/$1/;
+			$s =~ s/^.(\w*)//;
+			$c = $c =~ /^$SHLVL/ ? "m" : "?";  # Q&D for now
+		}
+		elsif ( $s=~/^\\\]/) {  # just remove \] from assumed title
+			$c =~ s/^(..).*//;
+			$s =~ s/^..//;
+		}
+		elsif ( $s=~/^\\./) {
+			$c =~ s/^(..).*/$1/;
+			$c =~ s/^\\//;
+			$s =~ s/^..//;
+		}
+		else {
+			$c =~ s/^(.).*/$1/;
+			$s =~ s/^.//;
+		}
+		# We will want to translate arbitrary text to
+		#   to y(arbitrary text)  -- see also $
+		if (defined($reps{$c}) ) {
+			$c = $reps{$c};
+		}
+		# $c =~ s/\\//g;
+		$new .= " ".$c." ";
+	}
+	if ($istitle) {
+		# Presumptuously assume "show root userid only"
+		if ($new !~ / r / && $new !~ / @@ /) {
+			$new =~ s/ h / r h /;
+		}
+		elsif ($new =~ / u +\@@ /) {
+			$new =~ s/ u +\@@ / r /;
+		}
+	}
+	print $new,"\n";
+}
+_EOF
+
+# fromours - perl -e script
+#fromours=<<'_EOF'   # Nope!
+# https://stackoverflow.com/questions/28565623/can-a-bash-heredoc-put-its-result-directly-into-a-variable
+IFS= read -r -d '' fromours <<'_EOF' || true
+%reps = ( 'B', ' ', 'p', '\$', 'c', '${debian_chroot:+($debian_chroot)}',
+	'L', '(', 'R', ')',
+	'm', '${SHLVL}' );
+# Eventually determined inside '' no extra \ needed.
+while (<>) {
+	$s = $_;
+	$istitle = 0;
+	$s =~ s/\n//g;
+	$new = "";
+	while ( $s ne "" ) {
+		$c = $s;
+		$c1 = $c;
+		$c1 =~ s/^(.).*/$1/;
+		$newc = $c1;
+		$s =~ s/^.//;
+ 		# \[\e]0;   backslashes literal
+		if ( $c1 =~ /^ / ) {
+			$s =~ s/^ *//;
+			$newc = "";  # ignore spaces
+		}
+		elsif ( $c1 =~ /^y/ ) {
+			$newc = "";
+			if ($s =~ /^[(][^()]*[)]/) {
+				$newc = $s;
+				$s=~s/^[(][^()]*[)]//;  # this seems dangerous
+				$newc =~ s/^[(]//;
+				$newc =~ s/^([^()]*)[)].*/$1/;
+				# Problems y(() and y()) might be nice...
+			}
+		}
+		elsif ( $c1 eq "r" ) {
+			$newc = "";
+			$newc = "\\u@@" if ( $< == 0);
+		}
+		elsif (defined($reps{$c1}) ) {
+			$newc = $reps{$c1};
+		}
+		elsif ( $c1 eq "m" ) {
+			# Tempting to do entire (N) or ""
+			$newc = $ENV{'SHLVL'};
+			$newc = "0" if ( $newc eq "" );
+		}
+		elsif ($c1 =~ /[a-zA-Z]/) { # treat all as potential escapes
+			$newc = "\\$c1";
+		}
+		# Note there are non-alpha \\ sequences
+		else {  # : @@ ( )
+			$newc = $c1;
+		}
+		# $c =~ s/\\//g;
+		$new .= $newc;
+	}
+	print $new,"\n";
+}
+_EOF
+
+#echo "toours: $toours" | od -bc -
+
+#echo "$oldtitle" | perl -e "$toours"
+#echo "$oldprompt" | perl -e "$toours"
+oldourtitle=`echo "$oldtitle" | perl -e "$toours"`
+oldourprompt=`echo "$oldprompt" | perl -e "$toours"`
+#echo "$oldourtitle"
+#echo "$oldourprompt"
+
+#echo "$oldourtitle" | perl -e "$fromours"
+#echo "$oldourprompt" | perl -e "$fromours"
+
+
+args=( $* )
+
+add_to_title=1
+newourtitle=""
+newourprompt=""
+i=0
+while [[ -n "${args[${i}]}" ]] ; do
+# Our args are in "our format"; no spaces, "B" instead
+	s=${args[${i}]}
+	case "$s" in
+		[tT]) add_to_title=0;;
+		[a-su-zA-SU-Z@@:])  # no spaces; "B" instead
+			if [[ $add_to_title > 0 ]] ; then
+				newourtitle="$newourtitle $s"
+			else
+				newourprompt="$newourprompt $s"
+			fi
+			;;
+		*)    # until it becomes obvious why we should not do this...
+			if [[ $add_to_title > 0 ]] ; then
+				newourtitle="$newourtitle $s"
+			else
+				newourprompt="$newourprompt $s"
+			fi
+			;;
+	esac
+	let ++i
+done
+
+
+# Translation:  (our vll)
+#    u  \u
+#    h  \h
+#    w  \w
+#    p  \$
+#    m  1 < $SHLVL ? "($SHLVL)" : ""  (s is available now; shell depth)
+#                             (d seems wanted for something?)
+#    B  ' '
+#    L  '('
+#    R  ')'
+#    :  :
+#    @@  @@
+#    T  (or t) divide title setting from following "actual prompt"
+#        nothing before T, do not set title
+#        if nothing after T, keep old "actual prompt"
+#    c  ${debian_chroot:+($debian_chroot)}
+#    r - special(?) root@@ if user is root (want user@@ if user is not xxxxxx)
+#    y  y(string) - insert literal string (ov var) for now
+#
+# Letters implied by bash(1)
+#    a A d D e H h j l n r s T t u V v W w   @@ ! $ [ ]
+# Also:
+#    \
+#    nnn
+# And standardish character-escapes
+#    a b d f n r t v
+#
+# Leaves
+#    c g i k m o p q x y z   (some we use)
+#
+#  New standard
+#    c u @@ h : B w T c u @@ h : w p B
+#  New proposed default
+#    c r h : B w T c u @@ h : w s p B
+#
+# Examples
+#   source ps1  T
+#   source ps1 h T
+#   source ps1 r h T
+#
+
+#echo "$newourtitle"
+#echo "$newourprompt"
+#echo "$newourtitle" | perl -e "$fromours"
+#echo "$newourprompt" | perl -e "$fromours"
+
+# if newprompt is empty, use old one
+# if newtitle is empty, do not set it
+# if newtitle is not empty, wrap with necessary magic
+
+#echo "$oldtitle" | perl -e "$toours"
+#echo "$oldprompt" | perl -e "$toours"
+
+if [[ "" == "$newourtitle" ]] ; then
+	newtitle=""  # remove title setting
+else
+#echo "$ournewtitle" | od -bc -
+	newtitle=`echo "$newourtitle" | perl -e "$fromours"`
+# 0000000 134 133 134 145 135 060 073 
+#           \   [   \   e   ]   0   ;
+# 0000060 141 134 135
+#           a   \   ]
+	newtitle='\[\e]0;'"$newtitle"'\a\]'
+	# Observation: if PS1 has \[\e]0; but not \a\] bash hangs
+fi
+if [[ "" == "$newourprompt" ]] ; then
+	newprompt="$oldprompt"
+else
+	newprompt=`echo "$newourprompt" | perl -e "$fromours"`
+fi
+
+
+#echo "title: $newtitle" | od -bc
+#echo "prompt: $newprompt" | od -bc
+
+
+	#ps1="$newprompt";
+	if [[ "" != "$newtitle" ]] ; then
+	# Leading and multiple internal spaces appear to be preserved
+		ps1="$newtitle""$newprompt"
+	else
+		ps1="$newprompt"
+	fi
+	PS1="$ps1"
+
+}
+# echo "PS1: $PS1" | od -bc
+
+__ps1 "$*"
+unset __ps1
+
+# color prompts
+#   PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+# Reasonable prompt
+#   PS1='${debian_chroot:+($debian_chroot)}\u@@\h:\w\$ '
+# Set xterm title
+#   PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@@\h: \w\a\]$PS1"
+####    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@@\h: \w\a\]$PS1"
+
+
+@
+
+
+1.3
+log
+@Brought over changes from ps1beta.
+
+s/d => m primarily.
+Finally got dynamic $SHLVL into prompts.
+
+Improved comments, in some cases by removing.
+@
+text
+@d135 1
+a135 1
+		elsif ( $s=~/^\$/) {  # ($SHLVL)
+d153 2
+d179 1
+d198 10
+d220 5
+a224 1
+		elsif ($c1 !~ /[a-z]/) {  # : @@ ( )
+a226 3
+		else { # u h w  etc.
+			$newc = "\\$c1";
+		}
+d285 2
+d294 1
+@
+
+
+1.2
+log
+@Changes apparently necessary for
+bash 4.4.20
+or perhaps
+perl 5.26.1
+
+Something did not like the { in a regexp.
+But the errors did not indicate what was complaining.
+@
+text
+@d3 1
+a3 18
+# Fundamental problem: variables set here are not scoped.
+# We can corrupt things for our caller, and also any
+# values we do not initialize are remembered from before.
+# (That caused us to fail to turn off title setting).
+
+
+# Proposed vll
+#
+# u - username
+# h - hostname
+# w - cwd (~ processed)
+# [^a-zA-Z] - literal
+# d - depth ($SHLVL) if $SHLVL > 1
+# T - End title setting, begin prompt.
+# t - synonym for T for now.
+# B - blank
+# p - prompt ($ or # i.e. \$ )
+# r - special(?) root@@ if user is root (want user@@ if user is not xxxxxx)
+d5 1
+a5 3
+#
+
+# ps1 - set PS1 according to arguments
+d138 1
+a138 1
+			$c = $c =~ /^$SHLVL/ ? "d" : "?";  # Q&D for now
+d176 3
+a178 2
+%reps = ( 'B', ' ', 'p', "\\\$", 'c', '${debian_chroot:+($debian_chroot)}',
+	'd', '\\\$SHLVL' );
+d199 4
+a202 1
+		elsif ( $c1 eq "d" ) {
+a206 3
+		elsif (defined($reps{$c1}) ) {
+			$newc = $reps{$c1};
+		}
+d263 1
+a263 1
+# Translation:
+d265 1
+a265 1
+#    h  \u
+d268 1
+a268 1
+#    s  1 < $SHLVL ? "($SHLVL)" : ""  (s is available now; shell depth)
+d278 11
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 6
+d13 1
+a13 1
+# c - cwd (~ processed)
+a14 2
+# A - @@
+# C - :
+d16 2
+a17 3
+# t? - for title
+# n? or nt? - remove
+# y? or yt? - add (beginning or end only)
+d19 1
+a19 1
+# p - prompt ($ or #)
+a20 1
+# S - special(?) current pslast - I don't think we need that
+a22 23
+# Following is maximal
+# ps1 tu t@@ th t: tB tc u @@ h d : c p B
+# (save as ~/.ps1last)
+# Remove user from title
+# ps1 ntu nt@@
+# Cannot really add things unless we restrict positions?
+# Therefore S for current string/setting...
+# ps1 yR ytR S
+# Perhaps I will normally use simply
+# ps1 tR th t: tB tc u @@ h d : c p B
+# Note that although order is important, t and not-t can be jumbled.
+#
+
+# Just testing arrays...
+testa=
+if [[ -n "$testa" ]] ; then
+declare -a args
+#args[0]=
+args=( $* )
+for i in 0 1 2 3 4 5 ; do
+	echo ${args[$i]}
+done
+fi
+d26 11
+a36 1
+oldps1="echo $PS1"
+d58 1
+d79 2
+d82 14
+a95 3
+ps1save=
+if [[ -r ${HOME}/.ps1save ]] ; then
+	ps1save=`sh -c "cat 2>/dev/null ${HOME}/.ps1save`
+a96 5
+if [[ -z "$ps1save" ]] ; then
+	ps1save='tR th t: tB tc u @@ h d : c p B'
+fi
+ps1save=" $ps1save "
+echo ps1save=$ps1save
+d98 152
+a249 16
+news=""
+show_user=no
+set_xtitle=yes
+while [[ -n "$1" ]] ; do
+	news="$news $1"
+	case "$1" in
+		nu) show_user=no;;
+		yu) show_user=yes;;
+		nxt) set_xtitle=no;;
+		yxt) set_xtitle=yes;;
+		n*);;
+		S*);;
+		*) ;;
+	esac
+	shift
+done
+d251 1
+a251 6
+echo "news: $news"
+args=( $news )
+for i in 0 1 2 3 4 5 ; do
+	echo -n ${i}:' '
+	echo ${args[${i}]}
+done
+d253 3
+a255 5
+oldp=$ps1save
+show_user=no
+set_xtitle=yes
+newp=
+newtp=
+d258 1
+a259 4
+	ns=`echo -n "$s"  | sed 's/^n//'`
+	ys=`echo -n "$s"  | sed 's/^y//'`
+echo $s $ns $ys
+echo -n $newp :
+d261 15
+a275 15
+		nu) newp=`echo -n "$newp"  | sed 's/ u / /'`;;
+		yu) show_user=yes;;
+		nxt) set_xtitle=no;;
+		yxt) set_xtitle=yes;;
+		nt) set_xtitle=no;;
+		yt) set_xtitle=yes;;
+		nt*) newp=`echo -n "$newp"  | sed "s/ $ns / /"`;;
+		yt*) newp="$newp $ys";;
+		n*)  newp=`echo -n "$newp"  | sed "s/ $ns / /"`;;
+		y*) newp="$newp $ys";;
+		y*)  newp=`echo -n "$newp"  | sed "s/ $ys / /"`;;
+		S*) newp="$newp $oldp";;
+		t?) newp="$newp $s";;
+		?) newp="$newp $s";;
+		*) ;;
+a276 1
+echo  $newp
+a279 5
+echo newp: "$newp"
+newsp=`echo -n "$newp" | sed 's/ t[^ ]/ /g'`
+newtp=`echo -n "$newp" | sed 's/ [^t]/ /g'`
+echo newsp: "$newsp"
+echo newtp: "$newtp"
+a306 1
+# An easy way to turn off our non-standard "s" would be nice
+d308 14
+a321 4
+# Might be nice if we could work with existing PS1?
+if [[ 2 > $SHLVL ]] ; then
+	# PS1="${debian_chroot:+($debian_chroot)}\u@@\h:\w\$ "
+	ps1='${debian_chroot:+($debian_chroot)}\u@@\h:\w\$ '
+d323 8
+a330 2
+	# PS1="${debian_chroot:+($debian_chroot)}\u@@\h:\w(\$SHLVL)\$ "
+	ps1='${debian_chroot:+($debian_chroot)}\u@@\h:\w($SHLVL)\$ '
+d332 6
+d339 2
+a340 1
+PS1="$ps1"
+d342 5
+a346 3
+if [[ "$set_xtitle" == "yes" ]] ; then
+	if [[ "$show_user" == "yes" ]] ; then
+		ps1='\[\e]0;${debian_chroot:+($debian_chroot)}\u@@\h: \w\a\]'"$PS1"
+d348 1
+a348 1
+		ps1='\[\e]0;${debian_chroot:+($debian_chroot)}\h: \w\a\]'"$PS1"
+d350 4
+a353 1
+fi
+d355 2
+a356 1
+PS1="$ps1"
+a365 1
+# Would be nice to add shell depth to prompt
+@

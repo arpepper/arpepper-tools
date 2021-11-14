@@ -1,0 +1,9 @@
+# source bin/ps1norm
+
+#  New standard
+#    c u @ h : B w T c u @ h : w p B
+#  New proposed default
+#    c r h : B w T c u @ h : w m p B
+
+source ps1 c r h : B w T c u @ h : w L m R p B
+

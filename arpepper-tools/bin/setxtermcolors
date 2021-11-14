@@ -2,6 +2,7 @@
 
 # To get the default values, following probably works...
 # xvim -xrm '*customization:-color'
+# But that doesn't let you tell what they are...
 
 # http://www.bigsoft.co.uk/blog/index.php/2008/04/11/configuring-ls_colors
 #
@@ -27,8 +28,6 @@
 
 # Set up our current defaults...
 
-# We attempted to map them all to be brown-ish, but not quite
-
 # This works well as a light gray in non-bold, but dark gray for bold
 # In particular, lynx likes to use it as its background.
 $RES = << "END";
@@ -37,47 +36,79 @@ $RES = << "END";
 END
 
 
-# The rest for now we just keep identical for N and N+8
+
+# The rest for now we just keep identical for N and N+8 (ir we remember)
 $RES .= << "END";
-*color1:rgb:cb/55/13
-*color9:rgb:bb/55/13
-*color2:rgb:8b/98/13
-*color10:rgb:8b/98/13
-*color3:rgb:bb/95/13
-*color11:rgb:bb/95/13
-*color4:rgb:6b/45/db
-*color12:rgb:6b/45/db
-*color5:rgb:ab/35/83
-*color13:rgb:ab/35/83
-*color6:rgb:4b/a5/73
-*color14:rgb:4b/a5/73
-*color7:rgb:8e/ae/83
-*color15:rgb:8e/ae/83
+// color1 - perl strings or inclusions - reddish
+*color1:rgb:e1/15/13
+*color9:rgb:e1/15/13
+*color2:rgb:3b/68/03
+*color10:rgb:3b/68/03
+// color3 - perl keywords - yellow or goldish (can => brown)
+// *color3:rgb:98/a2/10
+// *color3:rgb:72/72/00
+*color3:rgb:74/54/00
+*color11:rgb:74/54/00
+// color4 - perl comments - bluish
+// *color4:rgb:2b/25/ab
+// *color4:rgb:1b/15/8b
+*color4:rgb:10/0c/7b
+*color12:rgb:10/0c/7b
+// color5 - perl #!line  purple (now pinkish?)
+// *color5:rgb:b3/45/45
+*color5:rgb:e8/59/59
+*color13:rgb:e8/59/59
+// color6 - perl variables, etc; this bold green seems just right, maybe
+// *color6:rgb:10/85/53
+*color6:rgb:09/7b/31
+*color14:rgb:09/7b/31
+*color7:rgb:3e/8e/33
+*color15:rgb:3e/7e/33
 END
 
 $IRES="";
+# process - interpret given line and append to generated $IRES
 	sub
 process {
 # color11=0xbb9513,0xbb9513
+# Also allow...
+#   *color11:	rgb:bb/95/13
+# Also ignore # or / comments, or anything not parsing
 	($string) = @_;
 	return if $string =~ /^\s*$/;
 	return if $string =~ /^\s*#/;
-	($a1,$junk) = split(/,/,$string);
-	$junk=$junk;
-	($name,$rgbvalue) = split(/=/,$a1);
+	return if $string =~ m:^\s*/:;  # ignore c++ (xrdb) comments
+	$string =~ s/\n//g;
+	($a1,$junk) = split(/,/,$string);  # ?
+	return if (!defined($a1));
+
+	$rgbvalue = "0x090909";
+	$junk=$junk if (defined($junk));
+	$a1 =~ s/^[*]//;   # Allow us to process xrdb output
+	($name,$rgbvalue) = split(/[:=]/,$a1,2);
+	return if (!defined($name));
+	return if (!defined($rgbvalue));
+	$name =~ s/\s*//g;
+	$rgbvalue =~ s/^\s+//;
 	
-	$num = oct($rgbvalue);
-	$b1 = ($num >> 16);
-	$b2 = ($num >> 8);
-	$b3 = ($num);
-	$xvalue = sprintf("rgb:%2.2x/%2.2x/%2.2x",
-		($b1&0xff), ($b2&0xff), ($b3&0xff) );
+	if ($rgbvalue =~ /^rgb/ ) {
+		$xvalue = $rgbvalue;
+	}
+	else {
+		$num = oct($rgbvalue);
+		$b1 = ($num >> 16);
+		$b2 = ($num >> 8);
+		$b3 = ($num);
+		$xvalue = sprintf("rgb:%2.2x/%2.2x/%2.2x",
+			($b1&0xff), ($b2&0xff), ($b3&0xff) );
+	}
 	if ($name =~ /^color/) {
 		$IRES .= "*" . $name . ":" . $xvalue . "\n";
 	}
 }
 	
 if (defined($ARGV[0]) && $ARGV[0] ne "") {
+# We should not silently ignore extraneous args...
 	if ($ARGV[0] eq "-") {
 		while (<>) {
 			process($_);
@@ -90,8 +121,23 @@ if (defined($ARGV[0]) && $ARGV[0] ne "") {
 		}
 		close(COLORS);
 	}
+	# Defaulting to setting to default
+	#  can be awkward when testing since I have a tendency
+	#  to say "| setxtermcolors" where I mean "| setxtermcolrs -"
 	$RES = $IRES;
 }
+else {
+# Hope this works correctly to avoid doing xrdb -merge with defaults
+# when there was standard input.
+# That is, detect omission of "-" argument.
+	if ( ! -t *STDIN ) {
+		die "input detected, but no args";
+	}
+# I sort of think for e.g. login script it might get wrong result.
+# But it seemed to work via xsession2 menu item.
+}
+
+
 
 print $RES;
 

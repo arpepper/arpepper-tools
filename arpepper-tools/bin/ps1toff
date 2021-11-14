@@ -1,0 +1,5 @@
+# source bin/ps1toff
+
+# turn off title setting in prompt, retain previous prompt
+
+source ps1 T
