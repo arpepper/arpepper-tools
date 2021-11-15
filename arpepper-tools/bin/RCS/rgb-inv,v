@@ -1,0 +1,62 @@
+head	1.1;
+access;
+symbols;
+locks
+	arpepper:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2021.11.15.02.00.30;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial revision seems to work.
+Inverts the colour.
+Useful for brightening.
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/usr/bin/perl -w
+
+sub
+inv1 {
+	my($string) = @@_;
+	my($bad) = ("rgb:00/00/00");
+	my($r,$g,$b);
+	my($new);
+
+	$string =~ s/\n//g;
+# rgb:1b/05/8b
+	my ($x) = "[0-9a-f]";
+	return $string if ($string !~ m,rgb:$x$x/$x$x/$x$x,);
+
+	my($pref,$rgb,$suff);
+#return $bad if ($string !~ m,^rgb:$x$x/$x$x/$x$x,);
+	$string =~ m,^(.*)(rgb:$x$x/$x$x/$x$x)(.*)$,;
+	($pref,$rgb,$suff) = ($1,$2,$3);
+
+	$rgb =~ s/^rgb://;
+	($r,$g,$b) = split('/',$rgb);
+	$r = 0 + oct("0x$r");
+	$g = 0 + oct("0x$g");
+	$b = 0 + oct("0x$b");
+	$r = $r ^ 0xff;
+	$g = $g ^ 0xff;
+	$b = $b ^ 0xff;
+	$new = (0.299*$r + 0.587*$g + 0.114*$b);
+	return sprintf("$pref"."rgb:%2.2x/%2.2x/%2.2x"."$suff",
+			$r, $g, $b);
+}
+
+while (<>) {
+	print inv1($_),"\n";
+}
+@

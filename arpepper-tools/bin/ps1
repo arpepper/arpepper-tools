@@ -108,7 +108,7 @@ oldprompt=`echo "$oldprompt" | perl -ne "$cmd"`
 #toours=<<'_EOF'   # Nope!
 # https://stackoverflow.com/questions/28565623/can-a-bash-heredoc-put-its-result-directly-into-a-variable
 IFS= read -r -d '' toours <<'_EOF' || true
-%reps = ( ' ', 'B', '$', "p");
+%reps = ( ' ', 'B', '$', "p", "(", "L", ")", "R");
 while (<>) {
  # % and automatic brace balance seems to match differently at different times
 	$s = $_;
@@ -121,34 +121,49 @@ while (<>) {
 		if ( $s =~/^\\\[\\e\]0;/ ) {
 			$s =~ s/^\\\[\\e\]0;//;
 			$c = "";  # just remove escape from assumed title
+			$s =~ s/\\a\\\]$/\\\]/;  # remove strange bell before ]
 			$istitle = 1;
 		}
 		elsif ( $s=~/^\$[{]/)   # }
 			{   # trying to appease vi
 			# ${debian_chroot:+($debian_chroot)}'
 			# {
-			$c =~ s/^(.*}).*/$1/;
+			$c =~ s/^(.*[}]).*/$1/;
 			$s =~ s/^..//;  # {
-			$s =~ s/^.*[}].//;
-			$c = $c =~ /^\$[{]deb/ ? "c" : "?";  # Q&D for now }
+			$s =~ s/^[^}]*[}]//;
+			#  Note [$] does not work...
+			$c = $c =~ /^\$[{]debian_chroot[:][+][(]\$debian_chroot[)][}]/
+				? "c" : (
+				$c =~ /^\$[{]SHLVL[}]/
+				? "m" :
+				"y/$c/"
+				) ;  # Q&D for now }
 		}
 		elsif ( $s=~/^\$/) {  # ($SHLVL)  (${SHLVL}
 			$c =~ s/^.(\w*).*/$1/;
 			$s =~ s/^.(\w*)//;
-			$c = $c =~ /^$SHLVL/ ? "m" : "?";  # Q&D for now
+			$c = $c =~ /^$SHLVL/ ? "m" : "y/$c/";
 		}
 		elsif ( $s=~/^\\\]/) {  # just remove \] from assumed title
+			# should be end of title
 			$c =~ s/^(..).*//;
 			$s =~ s/^..//;
+i			# Note caller will have split into title and prompt
 		}
-		elsif ( $s=~/^\\./) {
+		elsif ( $s=~/^\\./) {  # most e.g. \u becomes just u
 			$c =~ s/^(..).*/$1/;
 			$c =~ s/^\\//;
 			$s =~ s/^..//;
 		}
 		else {
-			$c =~ s/^(.).*/$1/;
-			$s =~ s/^.//;
+			if ($s =~ /^\w/) {
+				$c =~ s:^(\w*).*:y/$1/:;
+				$s =~ s/^\w*//;
+			}
+			else {
+				$c =~ s/^(.).*/$1/;
+				$s =~ s/^.//;
+			}
 		}
 		# We will want to translate arbitrary text to
 		#   to y(arbitrary text)  -- see also $
@@ -164,7 +179,8 @@ while (<>) {
 			$new =~ s/ h / r h /;
 		}
 		elsif ($new =~ / u +\@ /) {
-			$new =~ s/ u +\@ / r /;
+			#$new =~ s/ u +\@ / r /;
+			# That's too presumptuous unless user was root
 		}
 	}
 	print $new,"\n";
@@ -197,11 +213,16 @@ while (<>) {
 		}
 		elsif ( $c1 =~ /^y/ ) {
 			$newc = "";
-			if ($s =~ /^[(][^()]*[)]/) {
+			my ($d,$rd);
+			$d = $s;
+			$d =~ s/^(.).*/$1/;
+			$rd = $d;
+			$rd = ")" if ($rd eq "(");
+			if ($s =~ /^[$d][^$d$rd]*[$rd]/) {
 				$newc = $s;
-				$s=~s/^[(][^()]*[)]//;  # this seems dangerous
-				$newc =~ s/^[(]//;
-				$newc =~ s/^([^()]*)[)].*/$1/;
+				$s=~s/^[$d][^$d$rd]*[$rd]//;  # this seems dangerous
+				$newc =~ s/^[$d]//;
+				$newc =~ s/^([^$d$rd]*)[$rd)].*/$1/;
 				# Problems y(() and y()) might be nice...
 			}
 		}
@@ -244,6 +265,16 @@ oldourprompt=`echo "$oldprompt" | perl -e "$toours"`
 #echo "$oldourprompt" | perl -e "$fromours"
 
 
+s=$1
+case "$s" in
+	-t)
+		echo "${oldourtitle} T ${oldourprompt}"
+		shift
+		;;
+	*)
+	;;
+esac
+
 args=( $* )
 
 add_to_title=1
@@ -273,6 +304,8 @@ while [[ -n "${args[${i}]}" ]] ; do
 	let ++i
 done
 
+#echo "i=$i"
+#sleep 2
 
 # Translation:  (our vll)
 #    u  \u
@@ -327,17 +360,22 @@ done
 #echo "$oldtitle" | perl -e "$toours"
 #echo "$oldprompt" | perl -e "$toours"
 
-if [[ "" == "$newourtitle" ]] ; then
-	newtitle=""  # remove title setting
+if [[ $i == 0 ]] ; then
+	# No no-dash options; make no changes
+	newtitle="$oldtitle"
 else
+	if [[ "" == "$newourtitle" ]] ; then
+		newtitle=""  # remove title setting
+	else
 #echo "$ournewtitle" | od -bc -
-	newtitle=`echo "$newourtitle" | perl -e "$fromours"`
+		newtitle=`echo "$newourtitle" | perl -e "$fromours"`
 # 0000000 134 133 134 145 135 060 073 
 #           \   [   \   e   ]   0   ;
 # 0000060 141 134 135
 #           a   \   ]
-	newtitle='\[\e]0;'"$newtitle"'\a\]'
-	# Observation: if PS1 has \[\e]0; but not \a\] bash hangs
+		newtitle='\[\e]0;'"$newtitle"'\a\]'
+		# Observation: if PS1 has \[\e]0; but not \a\] bash hangs
+	fi
 fi
 if [[ "" == "$newourprompt" ]] ; then
 	newprompt="$oldprompt"
