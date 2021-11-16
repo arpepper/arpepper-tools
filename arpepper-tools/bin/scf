@@ -1,3 +1,0 @@
-#!/bin/csh -f
-# don't need X forwarding for admin master?
-exec ssh -x cs-xh-admin.cs.private.uwaterloo.ca
