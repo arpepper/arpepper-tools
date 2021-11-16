@@ -45,23 +45,21 @@ $RES .= << "END";
 *color2:rgb:3b/68/03
 *color10:rgb:3b/68/03
 // color3 - perl keywords - yellow or goldish (can => brown)
-// *color3:rgb:98/a2/10
-// *color3:rgb:72/72/00
-*color3:rgb:74/54/00
-*color11:rgb:74/54/00
+// *color3:rgb:74/54/00
+*color3:rgb:7c/64/09
+*color11:rgb:7c/64/09
 // color4 - perl comments - bluish
-// *color4:rgb:2b/25/ab
-// *color4:rgb:1b/15/8b
-*color4:rgb:10/0c/7b
-*color12:rgb:10/0c/7b
+// *color4:rgb:10/0c/7b
+*color4:rgb:0c/08/8b
+*color12:rgb:0c/08/8b
 // color5 - perl #!line  purple (now pinkish?)
 // *color5:rgb:b3/45/45
 *color5:rgb:e8/59/59
 *color13:rgb:e8/59/59
 // color6 - perl variables, etc; this bold green seems just right, maybe
-// *color6:rgb:10/85/53
-*color6:rgb:09/7b/31
-*color14:rgb:09/7b/31
+// *color6:rgb:09/7b/31
+*color6:rgb:09/8b/39
+*color14:rgb:09/8b/39
 *color7:rgb:3e/8e/33
 *color15:rgb:3e/7e/33
 END
