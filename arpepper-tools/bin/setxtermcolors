@@ -75,7 +75,8 @@ process {
 	($string) = @_;
 	return if $string =~ /^\s*$/;
 	return if $string =~ /^\s*#/;
-	return if $string =~ m:^\s*/:;  # ignore c++ (xrdb) comments
+	return if $string =~ m:^\s*/:;  # ignore c++ (xrdb) comment
+# ** ; # This comment closes m: pattern (vim parser bug)
 	$string =~ s/\n//g;
 	($a1,$junk) = split(/,/,$string);  # ?
 	return if (!defined($a1));

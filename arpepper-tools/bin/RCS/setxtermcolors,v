@@ -1,10 +1,15 @@
-head	1.14;
+head	1.15;
 access;
 symbols;
 locks
-	arpepper:1.14; strict;
+	arpepper:1.15; strict;
 comment	@# @;
 
+
+1.15
+date	2021.11.20.12.10.15;	author arpepper;	state Exp;
+branches;
+next	1.14;
 
 1.14
 date	2021.11.16.00.12.03;	author arpepper;	state Exp;
@@ -83,9 +88,9 @@ we can tolerate.
 @
 
 
-1.14
+1.15
 log
-@Set color+8 to match color.
+@Add a comment to close m: for the buggy vim perl parser.
 @
 text
 @#!/usr/bin/perl -w
@@ -165,7 +170,8 @@ process {
 	($string) = @@_;
 	return if $string =~ /^\s*$/;
 	return if $string =~ /^\s*#/;
-	return if $string =~ m:^\s*/:;  # ignore c++ (xrdb) comments
+	return if $string =~ m:^\s*/:;  # ignore c++ (xrdb) comment
+# ** ; # This comment closes m: pattern (vim parser bug)
 	$string =~ s/\n//g;
 	($a1,$junk) = split(/,/,$string);  # ?
 	return if (!defined($a1));
@@ -233,6 +239,17 @@ open(PIPE,"|xrdb -merge") || die;
 print PIPE $RES;
 close PIPE;
 
+@
+
+
+1.14
+log
+@Set color+8 to match color.
+@
+text
+@d78 2
+a79 1
+	return if $string =~ m:^\s*/:;  # ignore c++ (xrdb) comments
 @
 
 
