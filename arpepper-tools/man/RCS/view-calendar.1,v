@@ -1,0 +1,80 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2021.11.29.01.43.59;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@A little more than a place-holder, for now.
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@.TH VIEW-CALENDAR 1 UW
+view-calendar.1
+.\"
+.\" view-calendar.1
+.\"
+.\" Inspecting /software/local_cs-xh-admin.cs.private.uwaterloo.ca/man/man1
+.\" 
+.\"
+.\" Maximal sections (union) appears to be (in apparent consistenct order)...
+.\" .SH NAME
+.\" .SH SYNOPSIS
+.\" .SH WHERE
+.\" .SH DESCRIPTION
+.\" .SH OPTIONS
+.\" .SH EXAMPLES
+.\" .SH FILES
+.\" .SH HOSTNAMES
+.\" .SH SEE ALSO
+.\" .SH NOTE
+.\" .SH NOTES
+.\" .SH BUGS
+.\" 
+.\" acc_query-graddb-ta-info.8 - seems to have maximal sections
+.\" acc_startend_TA-cs.8 - seems to have maximal sections
+.\"
+.\" SYNOPSIS and WHERE and OPTIONS could use good examples
+.\" I wonder if WHERE always comes between SYNOPSIS and DESCRIPTION ?
+.\"
+.SH NAME
+view-calendar \- show some information from calendar file/attachment
+.SH SYNOPSIS
+.hc %
+.B "%view-calendar"
+
+.\".SH WHERE
+.\".B "%view-calendar"
+.SH DESCRIPTION
+.PP
+.B "%view-calendar"
+is a crude attempt to print the usually most-relevant information
+in a calendar file; originally used as a mime-types handler for
+a text mail client.
+.\"
+.\"
+.\"
+.SH FILES
+.SH SEE ALSO
+.\".BR %rlog (1)
+.\"- print log messages and other information about RCS files
+.\".br
+
+.SH BUGS
+.sp
+.\"
+.\"
+.\" Example
+@

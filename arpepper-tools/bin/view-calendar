@@ -1,0 +1,47 @@
+#!/usr/bin/perl -w
+
+# mailcap will have decoded base64
+
+$b="";
+$tz="";
+$state="";
+$orger="";
+$attee="";
+$desc="";
+$start="";
+$endat="";
+while (<>) {
+	$_ =~ s/\n//g;
+	$_ =~ s/\r//g;  # Handle MS-Dos format
+	if ( $_ =~ /^ / ) {
+		$_ =~ s/^ //;
+		$b .= $_;
+		next;
+	}
+	else {
+# print $b;
+		if ( $b =~ /^BEGIN:(.*)/ ) {
+			$state .= ":".$1 ;
+		}
+		elsif ( $b =~ /^END:(.*)/ ) {
+			$state =~ s/:${1}$//; # I wonder if they can be crossed
+		}
+		if ( $b =~ /^TZID:/ ) { $t=$b; $t =~ s/^.*://; $tz.=$t;}
+# ORGANIZER;CN=School of Computer Science;SENT-BY="mailto:dan.brown@uwaterloo.ca":mailto:tm-math-schoolofcomputerscience@uofwaterloo.mail.onmicrosoft.com
+# ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=Dan Brown:mailto:dan.brown@uwaterloo.ca
+# SUMMARY;LANGUAGE=en-US:CS Council Meeting\, June 2020
+		if ( $b =~/^ORGANIZER;.*:/ ) { $t=$b;$t =~ s/^[^:]*://; $orger.=$t;}
+		if ( $b =~/^ATTENDEE;.*:/ ) { $t=$b;$t =~ s/^[^:]*://; $attee.="   ".$t."\n";}
+		if ( $b =~/^DESCRIPTION;.*:/ ) { $t=$b;$t =~ s/^[^:]*://; $desc.=$t;}
+		if ( $b =~/^SUMMARY;.*:/ ) { $t=$b;$t =~ s/^[^:]*://; $summ=$t;}
+		if ( $b =~/^DTSTART;.*:/ ) { $t=$b;$t =~ s/^[^:]*://; $start.=$t;}
+		if ( $b =~/^DTEND;.*:/ ) { $t=$b;$t =~ s/^[^:]*://; $endat.=$t;}
+	}
+	$b = $_;
+}
+
+# The above and the following suits my needs nearly all the time
+printf("\nEvent: %s\n  Starts: %s %s\n  Ends:  %s %s\nOrganizer:\n   %s\nAttendees:\n%s\n",
+	$summ, $start, $tz, $endat, $tz, $orger, $attee);
+
+
