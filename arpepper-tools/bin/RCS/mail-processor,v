@@ -1,4 +1,90 @@
-#!/usr/bin/perl -w
+head	1.13;
+access;
+symbols;
+locks
+	arpepper:1.13; strict;
+comment	@# @;
+
+
+1.13
+date	2019.11.27.21.13.27;	author arpepper;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2019.11.27.21.07.37;	author arpepper;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2019.11.27.20.58.21;	author arpepper;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2019.11.27.20.48.33;	author arpepper;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2018.05.30.18.15.29;	author arpepper;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2018.02.06.19.00.47;	author arpepper;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2018.02.02.18.22.45;	author arpepper;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2018.01.16.22.52.47;	author arpepper;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2017.11.30.21.24.13;	author arpepper;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2017.11.30.21.19.06;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2017.11.24.22.55.11;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2017.11.24.21.49.48;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2017.11.23.22.39.40;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@RCS here, help track changes for github.
+@
+
+
+1.13
+log
+@Expect all mbox directories to be directly under $HOME/mail-processor
+ 
+It's not really clear that's what we want, however.
+@
+text
+@#!/usr/bin/perl -w
 
 #
 # This is extremely messy but currently works.
@@ -28,7 +114,7 @@ else {
 $gnudate = "date"; # assert our path ensures that gnu/bin/date will be used
 sub
 unixtime {
-	my ($datestring) = @_;
+	my ($datestring) = @@_;
 
 	# we need to change this to use internal routines soon.
 	$value = `$gnudate --date "$datestring" +%s`;
@@ -37,15 +123,15 @@ unixtime {
 
 sub
 mail {
-	my ($file, $preface, $subject) = @_;
+	my ($file, $preface, $subject) = @@_;
 
 	#print "mail $file $subject\n";
 	#return;
-	#open(PIPE,"|/usr/lib/sendmail -bm arpepper\@cs.uwaterloo.ca");
-	#printf(PIPE "From: Adrian Pepper <arpepper\@uwaterloo.ca>\n");
-	open(PIPE,"|/usr/lib/sendmail -f arpepper\@localhost -bm arpepper\@localhost");
-	printf(PIPE "From: Adrian Pepper <arpepper\@uwaterloo.ca>\n");
-	printf(PIPE "To: arpepper\@localhost\n");
+	#open(PIPE,"|/usr/lib/sendmail -bm arpepper\@@cs.uwaterloo.ca");
+	#printf(PIPE "From: Adrian Pepper <arpepper\@@uwaterloo.ca>\n");
+	open(PIPE,"|/usr/lib/sendmail -f arpepper\@@localhost -bm arpepper\@@localhost");
+	printf(PIPE "From: Adrian Pepper <arpepper\@@uwaterloo.ca>\n");
+	printf(PIPE "To: arpepper\@@localhost\n");
 	printf(PIPE "Subject: %s\n", $subject);
 	printf(PIPE "\n");
 	print PIPE $preface;
@@ -189,7 +275,7 @@ while (<>) {
 		}
 		if ( $line =~ /^Subject: /i ) {
 			undef $subject;
-			$line =~ m@^Subject: \[UW-(RT|MATH|MFCF|CSCF)\s+#([0-9]+)\] *(.*)@i;
+			$line =~ m@@^Subject: \[UW-(RT|MATH|MFCF|CSCF)\s+#([0-9]+)\] *(.*)@@i;
 			if (defined($2)) {
 				$rtno = $2 if $rtno == 0;
 				if (defined($3)) {
@@ -216,7 +302,7 @@ while (<>) {
 			}
 			$subject =~ s/(.{1,90}).*/$1/;
 		}
-		elsif ( $line =~ m@^From @ ) {
+		elsif ( $line =~ m@@^From @@ ) {
 			last;
 		}
 		else {
@@ -224,7 +310,7 @@ while (<>) {
 			$line = <>;
 		}
 	}
-	if ( defined($line) && $line =~ m@^From @ ) {
+	if ( defined($line) && $line =~ m@@^From @@ ) {
 		# No more lines to eat; start new message
 		$end = 0;
 	}
@@ -399,3 +485,220 @@ if ( (( $frequent && (($now - $then) >= (60*60) ) )
 		system("touch last/dummy ; rm last/dummy");
 	}
 }
+@
+
+
+1.12
+log
+@Move some non-executed code to help match the mx.cs.uwaterloo.ca version better.
+@
+text
+@d79 2
+d86 6
+@
+
+
+1.11
+log
+@Add readonly filesystem heuristics learned the hard way on mx.cs.uwaterloo.ca.
+@
+text
+@d143 3
+a148 3
+		# emergency mail bombing prevention, we hope
+		$r = "recent";
+		if ( ! -w "$r" ) { exit(0); }
+@
+
+
+1.10
+log
+@Add a To: header to correspond to (but not match) mx.cs.uwaterloo.ca version.
+@
+text
+@d97 7
+a103 1
+system("date > update");
+d146 1
+d148 1
+d254 4
+d325 1
+@
+
+
+1.9
+log
+@Notes:
+- This has grown out-of-sync with github.com version
+- Make this change on u1404mwiki and u1804mail initially
+   - to hopefully prevent sending empty "list noise summary" messages
+ 
+- newly added variables indicate that the scope of some old variables
+   is sloppy
+@
+text
+@d48 1
+@
+
+
+1.8
+log
+@Brought forward updates from linux.cs.uwaterloo.ca.
+Up-to-date with version 1.23
+ 
+Tweak  batched processing of "less important" mailboxes.
+ 
+I am ready to contemplate multiple versions, e.g. mail-processor0
+mail-processor1, etc.
+But worry that could tend to cause some mail to be neglected again.
+@
+text
+@d307 3
+d319 2
+d352 3
+a354 1
+	mail("summary", "" . "\n", "][list noise summary");
+@
+
+
+1.7
+log
+@Brought forward updates from linux.cs.uwaterloo.ca.
+Up-to-date with version 1.21.
+ 
+Implement batched processing of "less important" mailboxes.
+I think.
+ 
+Use /usr/bin/stat
+@
+text
+@d298 5
+a302 1
+# Important list updates are processed by themselves
+d305 1
+d313 1
+a313 1
+		if ( -d $mbox && ! -e "$mbox/.important" ) {
+d334 10
+d351 2
+@
+
+
+1.6
+log
+@Brought forward updates from linux.cs.uwaterloo.ca.
+Up-to-date with version 1.17
+ 
+Changed our version to sendmail to localhost
+ 
+Change from a default of 8 hour threshold to 13.
+Comments.
+Different subject concatenation/truncation rules.
+Try upping DEFAULTHOURS, but really we need per-list frequency parameters.
+Try to regularize Re:
+@
+text
+@d268 2
+a269 1
+	$then = `stat last -headings +mtime -pathname`;
+d274 2
+d277 23
+d301 35
+@
+
+
+1.5
+log
+@Changed Subject to put important info first, identified by "][".
+@
+text
+@d44 3
+a46 1
+	open(PIPE,"|/usr/lib/sendmail -bm arpepper\@@cs.uwaterloo.ca");
+a179 1
+					$subject =~ s/(.{1,64}).*/$1/;
+d185 1
+a185 1
+				$subject =~ s/(.{1,64}).*/$1/;
+d200 1
+d254 2
+d273 2
+d276 2
+a277 1
+	 || (($now - $then) >= (8*60*60)) )  ) {
+@
+
+
+1.4
+log
+@Fixed a long-time bug probably dating back to rt-processor where
+processing headers actually terminated after Subject:
+ 
+This meant that if Subject preceded From: then From: was not processed.
+ 
+(Sync'd with linux.cs.uwaterloo.ca version)
+(verified problem was introduced recently (in mail-processor), actually)
+@
+text
+@d133 2
+a134 1
+		mail("summary-recent", "" . "\n", "Summary $mbox activity $messages/$items");
+d275 2
+a276 1
+		mail("summary-recent", "" . "\n", "Summary $mbox activity $messages/$items");
+@
+
+
+1.3
+log
+@Fixes from github.
+Initialize $efrom.
+Use /usr/bin/stat not old Ian! stat.
+@
+text
+@d150 1
+a150 1
+	if ($_ =~ /^From /) {
+d164 1
+a164 1
+		if ( $line =~ /^From: / ) {
+d186 4
+a189 4
+				$line = $_;
+				$line =~ s/\n//g;
+				# really should generalize multi-line]
+				if ($line !~ /^\s+/ ) {
+d194 2
+a195 2
+					$line =~ s/^\s+//;
+					$subject .= " " . "$line";
+d208 1
+a208 1
+		# No more lines to eat
+@
+
+
+1.2
+log
+@Thought I'd improved it.
+Use home.  More checks for $mbox prefix.  (?)
+@
+text
+@d109 8
+a116 2
+$then = `stat last -headings +mtime -pathname`;
+$then += 0;
+d158 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d9 5
+a19 1
+$HOME = "/home/arpepper";
+d78 3
+@
