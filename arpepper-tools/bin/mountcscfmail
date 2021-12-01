@@ -1,2 +1,0 @@
-#!/bin/csh -f
-exec sshfs arpepper@cscf.cs.uwaterloo.ca:export/var/mail /home/arpepper/mnt/var/mail -o follow_symlinks -o idmap=user
