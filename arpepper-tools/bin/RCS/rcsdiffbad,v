@@ -1,0 +1,137 @@
+head	1.4;
+access;
+symbols;
+locks
+	arpepper:1.4; strict;
+comment	@# @;
+
+
+1.4
+date	2021.12.20.23.03.32;	author arpepper;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2021.11.22.20.56.51;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2014.03.19.15.04.12;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2014.03.19.14.56.27;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@Show rcsdiff output of only files which have changes under the
+given directory.
+@
+
+
+1.4
+log
+@Remove inappropriate things.
+@
+text
+@#!/usr/bin/perl -w
+
+# Problems:
+#   1) An abort (e.g. empty file) stops the entire current instance of "xargs".
+#   2) Superficial RCS keyword changes will not be ignored.
+
+#$ENV{PATH} = `/bin/showpath -pw rcs vendor`;
+
+if (defined($ARGV[0])) {
+	chdir ("$ARGV[0]") || die "cd $ARGV[0]";
+}
+
+# Ignore files under apparent RCS directories, as well as *,v.
+# Some files (e.g. empty) under RCS will cause an abort.
+open(PIPE,
+   "/bin/sh -c \"find * -type f '!' -name '*,v' -print | grep -v /RCS/'[^/]*\$' | xargs rcsdiff 2>&1\" |") ||
+    die "pipeline";
+
+#$n = 0;
+#while (<PIPE>) {
+#	++$n;
+#	printf("%d:%s", $n, $_);
+#}
+#exit ;
+
+#
+# This attempts to suppress "clean" rcsdiff output...
+#
+
+$prefix = "";
+$printing = 1;
+while (<PIPE>) {
+	# Normal diff output will never have such a line...
+	if ($_ =~ m/^==========================================*=$/) {
+		$prefix = "";
+		$printing = 0;
+	}	
+	if ($printing) {
+		print;
+	}
+	elsif ($_ =~ /^rcsdiff:/) {   # A diagnostic
+		if ($printing) {
+			print $prefix;
+			$prefix = "";
+		}
+		# Problem: stdout/sterr may get mismashed  2>&1 should work?
+		print;
+	}
+	elsif ($_ =~ m/^\d/) {
+		# I claim normal diff output always begins with a digit
+		print $prefix;
+		$prefix = "";
+		$printing = 1;
+		print;
+	}
+	else {
+		$prefix .= $_;
+	}
+}
+@
+
+
+1.3
+log
+@Some old, some recent, changes.
+@
+text
+@d1 1
+a1 1
+#!/xhbin/perl -w
+d7 1
+a7 1
+$ENV{PATH} = `/bin/showpath -pw rcs vendor`;
+@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@d13 2
+d16 1
+a16 1
+   "/bin/sh -c \"find * -type f '!' -name '*,v' -print | xargs rcsdiff 2>&1\" |") ||
+d26 4
+d39 8
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 4
+@
