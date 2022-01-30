@@ -1,4 +1,16 @@
+#!/bin/csh -f
+
 #!/bin/sh
 #datefilename `getdate 'Dec 14'`
-PATH=`/bin/showpath /u/arpepper/bin vendor`; export PATH
-exec timefilename  "$@" | sed 's/-..:..:..$//'
+#PATH=`/bin/showpath -pw +wto /u/arpepper/bin vendor`; export PATH
+#exec timefilename  "$@" | sed 's/-..:..:..$//'
+
+# Replicate timefilename to reduce need for PATH maintenance
+
+set timevar = "$1"
+if ( "x$timevar" == "x" ) then
+	set timevar = `date --date="now" +%s`
+endif
+set timevar=`echo "$timevar" | sed 's/^[0-9][0-9]*$/@&/'`
+date --date="$timevar" +"%F"
+

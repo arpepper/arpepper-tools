@@ -1,0 +1,75 @@
+head	1.3;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2022.01.29.18.59.48;	author arpepper;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2022.01.29.18.55.04;	author arpepper;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	99.11.03.18.01.26;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@create a filename based on a date (todays)
+@
+
+
+1.3
+log
+@Add -pw +wto  to commented showpath, to match cs-xh-admin.
+@
+text
+@#!/bin/csh -f
+
+#!/bin/sh
+#datefilename `getdate 'Dec 14'`
+#PATH=`/bin/showpath -pw +wto /u/arpepper/bin vendor`; export PATH
+#exec timefilename  "$@@" | sed 's/-..:..:..$//'
+
+# Replicate timefilename to reduce need for PATH maintenance
+
+set timevar = "$1"
+if ( "x$timevar" == "x" ) then
+	set timevar = `date --date="now" +%s`
+endif
+set timevar=`echo "$timevar" | sed 's/^[0-9][0-9]*$/@@&/'`
+date --date="$timevar" +"%F"
+
+@
+
+
+1.2
+log
+@Switch from elegant sed of timefilename to doing the same work.
+This removes dependence on PATH maintenance.
+@
+text
+@d5 1
+a5 1
+#PATH=`/bin/showpath /u/arpepper/bin vendor`; export PATH
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 2
+d5 12
+a16 2
+PATH=`/bin/showpath /u/arpepper/bin vendor`; export PATH
+exec timefilename  "$@@" | sed 's/-..:..:..$//'
+@
