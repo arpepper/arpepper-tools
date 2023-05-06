@@ -90,6 +90,9 @@ if ( $mbox =~ m:^/u[^/]*/arpepper/[^/][^/]*mail/: ) {
 if ( $mbox =~ m:^/home/arpepper/[^/][^/]*mail/: ) {
 	$mbox =~ s:^/home/arpepper/[^/][^/]*mail/:: ;
 }
+# It actually seems that we want simply basename
+#   Later it is assumed $mbox is a simple file
+$mbox =~ s:^.*/::;
 if ( ! -d "$HOME/mail-processor/$mbox" ) {
 	system("mkdir -p $HOME/mail-processor/$mbox");
 }
