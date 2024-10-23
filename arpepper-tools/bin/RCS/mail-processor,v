@@ -1,10 +1,15 @@
-head	1.13;
+head	1.14;
 access;
 symbols;
 locks
-	arpepper:1.13; strict;
+	arpepper:1.14; strict;
 comment	@# @;
 
+
+1.14
+date	2024.10.23.20.48.39;	author arpepper;	state Exp;
+branches;
+next	1.13;
 
 1.13
 date	2019.11.27.21.13.27;	author arpepper;	state Exp;
@@ -77,11 +82,9 @@ desc
 @
 
 
-1.13
+1.14
 log
-@Expect all mbox directories to be directly under $HOME/mail-processor
- 
-It's not really clear that's what we want, however.
+@RCS change which got mail-processor basically working again.
 @
 text
 @#!/usr/bin/perl -w
@@ -176,6 +179,9 @@ if ( $mbox =~ m:^/u[^/]*/arpepper/[^/][^/]*mail/: ) {
 if ( $mbox =~ m:^/home/arpepper/[^/][^/]*mail/: ) {
 	$mbox =~ s:^/home/arpepper/[^/][^/]*mail/:: ;
 }
+# It actually seems that we want simply basename
+#   Later it is assumed $mbox is a simple file
+$mbox =~ s:^.*/::;
 if ( ! -d "$HOME/mail-processor/$mbox" ) {
 	system("mkdir -p $HOME/mail-processor/$mbox");
 }
@@ -485,6 +491,17 @@ if ( (( $frequent && (($now - $then) >= (60*60) ) )
 		system("touch last/dummy ; rm last/dummy");
 	}
 }
+@
+
+
+1.13
+log
+@Expect all mbox directories to be directly under $HOME/mail-processor
+ 
+It's not really clear that's what we want, however.
+@
+text
+@d93 3
 @
 
 
