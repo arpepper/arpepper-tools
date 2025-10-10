@@ -1,0 +1,37 @@
+head	1.1;
+access;
+symbols;
+locks
+	arpepper:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2021.12.06.02.49.36;	author arpepper;	state Exp;
+branches;
+next	;
+
+
+desc
+@sbk - sort by key (more-or-less, I think)
+Changes a list of filenames of backups into glob patterns by host/container.
+
+Intended to make it easy to produce grouped list of filenames to
+select and edit to delete some of the files.
+
+The name sbk was probably actually semi-random typing.
+"Sort By" probably accurate.  K more random?
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/bash
+
+sed 's/-rootfs-config.*/-rootfs-config-*/' | sort | uniq -c | sort -nr
+
+# | sed 's/^/ls -d /' | sed 's/$/ ; echo ""/'
+@

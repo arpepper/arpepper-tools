@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sed 's/-rootfs-config.*/-rootfs-config-*/' | sort | uniq -c | sort -nr
+
+# | sed 's/^/ls -d /' | sed 's/$/ ; echo ""/'
